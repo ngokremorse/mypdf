@@ -1,0 +1,27 @@
+<form role="form" name="form">
+    <div id="pdf-container" style="width: 100%; height: 100vh"></div>
+    <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-lib/2.6.347_pdf.worker.min.js';</script>
+    <script src="/pdf-lib/4.3.0_fabric.min.js"></script>
+    <script src="/pdf-lib/pdf_lib.min.js"></script>
+    <script src="/pdf-lib/mypdf.js"></script>
+    <script cam-script type="text/form-script">
+        let pdf = new PDFTQT();
+        let pdfEditor = new pdf.PDFEditor();
+        let vm = camForm.variableManager;
+         camForm.on('form-loaded', function() {
+            vm.fetchVariable('pdfData');
+         });
+
+          camForm.on('variables-fetched', async function() {
+             const pdfData = vm.variableValue('pdfData');
+             var link = location.protocol + "//" + location.host;
+             await pdfEditor.loadPdf('pdf-container', link + '/pdf.pdf');
+             pdfEditor.loadComponents(pdfData);
+          });
+
+         camForm.on('submit', function(e) {
+
+         });
+    </script>
+</form>

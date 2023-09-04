@@ -1,0 +1,40 @@
+<form role="form" name="form">
+    <button class="btn" id="addSign">Add Sign</button>
+    <div id="pdf-container"></div>
+
+    <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-lib/2.6.347_pdf.worker.min.js';</script>
+    <script src="/pdf-lib/4.3.0_fabric.min.js"></script>
+    <script src="/pdf-lib/pdf_lib.min.js"></script>
+    <script src="/pdf-lib/mypdf.js"></script>
+    <script cam-script type="text/form-script">
+        let pdf = new PDFTQT();
+        let pdfEditor = new pdf.PDFEditor();
+        let vm = camForm.variableManager;
+         console.log(vm);
+         camForm.on('form-loaded', async function() {
+            var link = location.protocol + "//" + location.host;
+            await pdfEditor.loadPdf('pdf-container', link + '/pdf.pdf');
+         });
+          camForm.on('variables-fetched', function() {
+
+          });
+         camForm.on('submit', function(e) {
+            submit(e, vm);
+         });
+
+          function submit(event, vm) {
+                const components = pdfEditor.getComponents();
+                vm.createVariable({
+                    name: 'pdfData',
+                    type: 'json',
+                    value: components
+                });
+            }
+
+        document.getElementById('addSign').addEventListener('click', () => {
+            pdfEditor.addGroup();
+        });
+
+    </script>
+</form>
