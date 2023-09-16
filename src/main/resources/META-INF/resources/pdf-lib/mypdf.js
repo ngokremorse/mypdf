@@ -50,9 +50,9 @@ var PDFTQT = function () {
         };
 
         // ========= Interface ==========================
-        // load pdf from url show on document element with containerId
-        this.loadPdf = async function (containerId, pdfUrl) {
-            let loadingTask = await pdfjsLib.getDocument(pdfUrl);
+        // load pdf from url show on document element with containerId string | URL | TypedArray | ArrayBuffer | DocumentInitParameters
+        this.loadPdf = async function (containerId, pdfSrc) {
+            let loadingTask = await pdfjsLib.getDocument(pdfSrc);
             const pdf = await loadingTask.promise;
             await loadPage(containerId, pdf, 1);
         }
@@ -179,7 +179,24 @@ var PDFTQT = function () {
         this.getComponents = function () {
             let components = [];
             pageCanvas.forEach(page => page.getObjects().forEach(item => {
-                components.push(item);
+                if (item.type === 'group') {
+                    let objects = item._objects.map(ob => {
+                        if (ob.type === 'text') {
+                            return {
+                                ...ob.toObject(),
+                                text: ob.text,
+                                fontSize: ob.fontSize
+                            }
+                        }
+                        return ob.toObject();
+                    })
+                    components.push({
+                        ...item.toObject(),
+                        objects: objects
+                    })
+                } else {
+                    components.push(item);
+                }
             }));
             return components;
         }
@@ -245,10 +262,13 @@ var PDFTQT = function () {
         }
 
         function loadGroupOnCanvas(groupObject) {
-            const groupCopy = copyGroup(groupObject);
-            const fCanvas = pageCanvas[groupObject.metadata.pageActive];
-            fCanvas.add(groupCopy);
-            fCanvas.renderAll();
+            fabric.Group.fromObject(groupObject, function (groupInstance){
+                const fCanvas = pageCanvas[groupObject.metadata.pageActive];
+                groupInstance.selectable = false;
+                fCanvas.add(groupInstance);
+                fCanvas.renderAll();
+            });
+
         }
 
 
@@ -261,23 +281,6 @@ var PDFTQT = function () {
                 scaleY: componentOld.height / componentNew.height
             });
             return componentNew;
-        }
-
-        function copyGroup(groupObject) {
-            const fText = new fabric.Text(groupObject.metadata.name, {
-                ...groupObject.objects[1],
-                fontSize: groupObject.objects[0].width * 15 / 100,
-            });
-
-            const rect = new fabric.Rect({
-                ...groupObject.objects[0]
-            });
-            const groupCopy = new fabric.Group([rect, fText], {
-                ...groupObject,
-                selectable: groupObject.metadata.editable
-            });
-            groupCopy.metadata = groupObject.metadata;
-            return groupCopy;
         }
     }
 }
