@@ -4,10 +4,12 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+
 @Component
-public class Noti implements JavaDelegate {
+public class HandleUsers implements JavaDelegate {
     @Override
     public void execute(DelegateExecution execution) throws Exception {
-        execution.setVariable("thanh", "thanh");
+        execution.setVariable("users", Arrays.asList("thanhtq", "thanhtq1"));
     }
 }

@@ -1,0 +1,28 @@
+<form role="form" name="form">
+    <button id="cancelAllTaskBtn">Cancel All task</button>
+    <script cam-script type="text/form-script">
+        var camHttp;
+        var camUri;
+        inject(['$http', 'Uri', function ($http, Uri) {
+            camUri = Uri;
+            camHttp = $http;
+
+        }]);
+        camForm.on("form-loadded", function () {
+            var taskService = camForm.client.resource('task');
+            taskService.get(camForm.taskId, function (err, task) {
+                var processInstanceId = task.processInstanceId;
+            });
+        });
+
+        document.body.querySelector("#cancelAllTaskBtn").addEventListener('click', function () {
+            camHttp.post(camUri.appUri('engine://engine/:engine/message/'),
+                    {
+                        messageName: "EndTasks"
+                    })
+                    .then((data) => {
+                        console.log(data);
+                    });
+        });
+    </script>
+</form>
