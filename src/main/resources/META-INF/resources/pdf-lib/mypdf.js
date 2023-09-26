@@ -6,7 +6,8 @@ var PDFTQT = function () {
             // red pdf
             const arrayBuffer = await fetch(pdfUrl).then(res => res.arrayBuffer());
             const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
-            for (let j = 0; j < pdfDoc.getPageCount(); j++) {
+            const pages = pdfDoc.getPages();
+            for (let j = 0; j < pages.length; j++) {
                 const [existingPage] = await pdfDocMerge.copyPages(pdfDoc, [j]);
                 pdfDocMerge.addPage(existingPage);
             }
@@ -42,39 +43,90 @@ var PDFTQT = function () {
 
     //=======================  EDITOR  ====================
     this.PDFEditor = function () {
+        this.scale = 1;
         let pageCanvas = [];
         let canvasActive = 0;
+        let pdfLoad;
+        let containerIdCurrent;
         let mousePosition = {
             x: 0,
             y: 0
         };
 
+        this.exportData = function () {
+            return {
+                scale: this.scale,
+                components: this.getComponents()
+            }
+        }
+
+        this.reloadPdf = async function () {
+            pageCanvas = [];
+            const container = document.getElementById(containerIdCurrent);
+            container.innerHTML = "";
+            await loadPage(container, pdfLoad, 1);
+        }
+
         // ========= Interface ==========================
         // load pdf from url show on document element with containerId
-        this.loadPdf = async function (containerId, pdfUrl) {
-            let loadingTask = await pdfjsLib.getDocument(pdfUrl);
-            const pdf = await loadingTask.promise;
-            await loadPage(containerId, pdf, 1);
+        // pdfSrc: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters
+
+        let resizeTimer;
+        let that = this;
+        async function resizeFunction() {
+            let components = that.getComponents();
+            const scaleOld = that.scale;
+            await that.reloadPdf(containerIdCurrent);
+            const scaleNew = that.scale / scaleOld;
+            that.loadComponents(components, scaleNew);
+        }
+
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(resizeFunction, 350);
+        });
+
+        this.loadPdf = async function (containerId, pdfSrc) {
+            containerIdCurrent = containerId;
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+            container.style.width = "100%";
+            container.style.height = "100vh";
+            container.style.overflowY = "scroll";
+            let loadingTask = await pdfjsLib.getDocument(pdfSrc);
+            pdfLoad = await loadingTask.promise;
+            await loadPage(container, pdfLoad, 1);
         }
 
         // load components, component is fabric object
-        this.loadComponents = function (components) {
-            components.forEach((compo) => {
-                if (compo.type === 'group') {
-                    loadGroupOnCanvas(compo);
+        this.loadComponents = function (components, scaleNew) {
+            scaleNew = scaleNew || 1;
+            components.forEach(item => {
+                const objects = item.objects || item._objects;
+                objects.forEach(com => {
+                    com.width = com.width * scaleNew;
+                    com.height = com.height * scaleNew;
+                    if (com.fontSize) com.fontSize = com.fontSize * scaleNew;
+                });
+                item.top = item.top * scaleNew;
+                item.left = item.left * scaleNew;
+                item.width = item.width * scaleNew;
+                item.height = item.height * scaleNew;
+                if (item.type === 'group') {
+                    loadGroupOnCanvas(item);
                 }
             });
         }
 
         this.addGroup = function (text, width, height, background, metadata) {
-            width = width ? width : 150;
-            height = height ? height : 100;
+            width = width ? width : 75 * that.scale;
+            height = height ? height : 50 * that.scale;
             background = background ? background : 'green';
-            text = text ? text : Date.now().toString();
+            text = text ? text : Date.now().toString().substr(0, 3);
             let left = mousePosition.x - width / 2;
             let top = mousePosition.y - height / 2;
             metadata = metadata ? metadata : {
-                id: Date.now()
+                id: Date.now().toString().substr(0, 3)
             };
             let metadataMerge = {
                 name: text,
@@ -183,7 +235,6 @@ var PDFTQT = function () {
             }));
             return components;
         }
-
         this.saveAsByte = async function () {
             const pdfDoc = await PDFLib.PDFDocument.create();
             for (let i = 0; i < pageCanvas.length; i++) {
@@ -202,16 +253,13 @@ var PDFTQT = function () {
         }
 
         // ========== Util ================//
-        async function loadPage(containerId, pdf, index) {
+        async function loadPage(container, pdf, index) {
             if (index > pdf.numPages) return;
-            let container = document.getElementById(containerId);
-            container.style.width = "100%";
-            container.style.height = "100vh";
-            container.style.overflowY = "scroll";
             const page = await pdf.getPage(index);
             let viewport = page.getViewport({scale: 1});
-            const scale = Math.floor(container.offsetWidth / viewport.width)
-            viewport = page.getViewport({scale: scale});
+            const scaleCurrent = Math.round(container.offsetWidth / viewport.width * 100) / 100;
+            viewport = page.getViewport({scale: scaleCurrent});
+            that.scale = scaleCurrent;
             const canvas = document.createElement('canvas');
             canvas.className = 'pdf-canvas';
             canvas.height = viewport.height;
@@ -241,7 +289,7 @@ var PDFTQT = function () {
             };
             // fCanvas.isDrawingMode = true;
             pageCanvas.push(fCanvas);
-            await loadPage(containerId, pdf, index + 1);
+            await loadPage(container, pdf, index + 1);
         }
 
         function loadGroupOnCanvas(groupObject) {
@@ -264,16 +312,29 @@ var PDFTQT = function () {
         }
 
         function copyGroup(groupObject) {
+            debugger;
+            const objects = groupObject.objects || groupObject._objects;
             const fText = new fabric.Text(groupObject.metadata.name, {
-                ...groupObject.objects[1],
-                fontSize: groupObject.objects[0].width * 15 / 100,
+                ...objects[1],
+                fontSize: objects[1].fontSize || objects[0].width * 15 / 100,
             });
 
             const rect = new fabric.Rect({
-                ...groupObject.objects[0]
+                width: objects[0].width,
+                height: objects[0].height,
+                originX: objects[0].originX,
+                originY: objects[0].originY,
+                fill: objects[0].fill,
             });
             const groupCopy = new fabric.Group([rect, fText], {
-                ...groupObject,
+                width: groupObject.width,
+                height: groupObject.height,
+                left: groupObject.left,
+                top: groupObject.top,
+                lockScalingFlip: true,
+                lockScalingX: true,
+                lockScalingY: true,
+                lockRotation: true,
                 selectable: groupObject.metadata.editable
             });
             groupCopy.metadata = groupObject.metadata;
