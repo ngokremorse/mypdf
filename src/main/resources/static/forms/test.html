@@ -1,5 +1,6 @@
 <form role="form" name="form">
     <button class="btn" id="addSign">Add Sign</button>
+    <button class="btn" id="downloadFile">Download</button>
     <div id="pdf-container"></div>
 
     <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
@@ -8,52 +9,53 @@
     <script src="/pdf-lib/pdf_lib.min.js"></script>
     <script src="/pdf-lib/mypdf.js"></script>
     <script cam-script type="text/form-script">
-        let pdf = new PDFTQT();
-        let pdfEditor = new pdf.PDFEditor();
-        let vm = camForm.variableManager;
-         console.log(vm);
-         camForm.on('form-loaded', async function() {
+        var pdf = new PDFTQT();
+        var pdfEditor = new pdf.PDFEditor();
+        var vm = camForm.variableManager;
+        camForm.on('form-loaded', async function () {
             var link = location.protocol + "//" + location.host;
             await pdfEditor.loadPdf('pdf-container', link + '/pdf.pdf');
-         });
-          camForm.on('variables-fetched', function() {
+        });
+        camForm.on('variables-fetched', function () {
 
-          });
-         camForm.on('submit', function(e) {
+        });
+        camForm.on('submit', function (e) {
             submit(e, vm);
-         });
-
-          function submit(event, vm) {
-                const components = pdfEditor.getComponents();
-                vm.createVariable({
-                    name: 'pdfData',
-                    type: 'json',
-                    value: components
-                });
-                const pdfBytes = pdfEditor.saveAsByte();
-                const blob = new Blob([pdfBytes], {type: "application/pdf"});
-                const file = new File([blob], 'filename.pdf');
-                var formData = new FormData();
-                formData.append('filePdf', file);
-                fetch('/file/upload', {
-                      method: 'POST',
-                      body: formData
-                 })
-                  .then(response => {
-                    if (response.ok) {
-                      console.log('File uploaded successfully');
-                    } else {
-                      console.error('File upload failed');
-                    }
-                  })
-                  .catch(error => {
-                    console.error('An error occurred:', error);
-                  });
-            }
-
-        document.getElementById('addSign').addEventListener('click', () => {
-            pdfEditor.addGroup();
         });
 
+        function submit(event, vm) {
+            let data =  pdfEditor.exportData();
+            vm.createVariable({
+                name: 'pdfData',
+                type: 'json',
+                value: data
+            });
+        }
+
+        document.body.querySelector('#addSign').addEventListener('click', () => {
+            pdfEditor.addGroup();
+        });
+        document.body.querySelector('#downloadFile').addEventListener('click', async () => {
+            const pdfByte = await pdfEditor.saveAsByte();
+            console.log(pdfByte);
+            const blob = new Blob([pdfByte], {type: 'application/pdf'});
+
+            // Create a temporary URL for the Blob
+            const url = URL.createObjectURL(blob);
+
+            // Create a link element
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'test.pdf';
+
+            // Append the link to the document body
+            document.body.appendChild(link);
+
+            // Trigger the click event to start the download
+            link.click();
+
+            // Clean up by revoking the URL object
+            URL.revokeObjectURL(url);
+        });
     </script>
 </form>
