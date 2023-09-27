@@ -93,6 +93,7 @@ var PDFTQT = function () {
             container.style.width = "100%";
             container.style.height = "100vh";
             container.style.overflowY = "scroll";
+            container.style.background = "gray";
             let loadingTask = await pdfjsLib.getDocument(pdfSrc);
             pdfLoad = await loadingTask.promise;
             await loadPage(container, pdfLoad, 1);
@@ -118,6 +119,26 @@ var PDFTQT = function () {
             });
         }
 
+        this.addIText = function (text, width) {
+            width = width ? width : 75 * that.scale;
+            text = text ? text : "Typing something";
+            const itext = new fabric.IText(text, {
+                width: width,
+                fontSize: width * 15 / 100,
+                left: 50,
+                top: 70,
+                fill: "black",
+                selectionColor: "rgba(0,0,255,0.5)",
+                lockScalingFlip: true,
+                lockRotation: true
+            });
+
+            const fCanvas = pageCanvas[canvasActive];
+            fCanvas.add(itext);
+            fCanvas.setActiveObject(itext);
+            fCanvas.renderAll();
+
+        }
         this.addGroup = function (text, width, height, background, metadata) {
             width = width ? width : 75 * that.scale;
             height = height ? height : 50 * that.scale;
@@ -208,26 +229,6 @@ var PDFTQT = function () {
             objectActive.canvas.remove(objectActive);
         }
 
-        this.replaceGroupToImage = function (group, imageUrl) {
-            fabric.Image.fromURL(imageUrl, (myImg) => {
-                const img = copyAttributeComponent(group, myImg);
-                group.canvas.add(img);
-                group.canvas.remove(group);
-                myImg.canvas.setActiveObject(img);
-            });
-        }
-
-        this.hiddenComponent = function (component) {
-            component.visible = false;
-            component.canvas.discardActiveObject(component);
-            component.canvas.renderAll();
-        }
-
-        this.showComponent = function (component) {
-            component.visible = true;
-            component.canvas.renderAll();
-        }
-
         this.getComponents = function () {
             let components = [];
             pageCanvas.forEach(page => page.getObjects().forEach(item => {
@@ -266,6 +267,9 @@ var PDFTQT = function () {
             canvas.width = viewport.width;
             canvas.id = 'pdf-canvas-' + index;
             container.appendChild(canvas);
+            const div = document.createElement("div");
+            div.style.marginTop = "10px";
+            container.appendChild(div);
             const context = canvas.getContext('2d');
 
             const renderContext = {
@@ -299,20 +303,7 @@ var PDFTQT = function () {
             fCanvas.renderAll();
         }
 
-
-        function copyAttributeComponent(componentOld, componentNew) {
-            componentNew.left = componentOld.left;
-            componentNew.top = componentOld.top;
-            componentNew.metadata = componentOld.metadata;
-            componentNew.set({
-                scaleX: componentOld.width / componentNew.width,
-                scaleY: componentOld.height / componentNew.height
-            });
-            return componentNew;
-        }
-
         function copyGroup(groupObject) {
-            debugger;
             const objects = groupObject.objects || groupObject._objects;
             const fText = new fabric.Text(groupObject.metadata.name, {
                 ...objects[1],
