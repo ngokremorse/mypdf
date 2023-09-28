@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.13.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0">
   <bpmn:process id="my-project-process" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_1jib8eb</bpmn:outgoing>
@@ -11,23 +11,13 @@
       <bpmn:incoming>Flow_1jib8eb</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_16gzt2m</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:sequenceFlow id="SequenceFlow_16gzt2m" sourceRef="say-hello" targetRef="Activity_149f0ht" />
+    <bpmn:sequenceFlow id="SequenceFlow_16gzt2m" sourceRef="say-hello" targetRef="Activity_01j9g7r" />
     <bpmn:userTask id="Activity_01j9g7r" name="dfdsfds" camunda:formKey="embedded:app:forms/show.html">
-      <bpmn:incoming>Flow_1ixd3wi</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_16gzt2m</bpmn:incoming>
       <bpmn:outgoing>Flow_1kt2gsp</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1kt2gsp" sourceRef="Activity_01j9g7r" targetRef="EndEvent_0x6ir2l" />
-    <bpmn:serviceTask id="Activity_149f0ht" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:class="com.example.workflow.features.Noti">
-      <bpmn:incoming>SequenceFlow_16gzt2m</bpmn:incoming>
-      <bpmn:outgoing>Flow_0cyt133</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_0cyt133" sourceRef="Activity_149f0ht" targetRef="Activity_1d1xw38" />
     <bpmn:sequenceFlow id="Flow_1jib8eb" sourceRef="StartEvent_1" targetRef="say-hello" />
-    <bpmn:serviceTask id="Activity_1d1xw38" camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:class="com.example.workflow.features.Noti">
-      <bpmn:incoming>Flow_0cyt133</bpmn:incoming>
-      <bpmn:outgoing>Flow_1ixd3wi</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_1ixd3wi" sourceRef="Activity_1d1xw38" targetRef="Activity_01j9g7r" />
   </bpmn:process>
   <bpmn:message id="Message_1g5d0de" name="Message_1g5d0de" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
@@ -35,46 +25,26 @@
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0a5lu85_di" bpmnElement="Activity_149f0ht">
-        <dc:Bounds x="560" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="UserTask_08mft2c_di" bpmnElement="say-hello">
-        <dc:Bounds x="390" y="90" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_0x6ir2l_di" bpmnElement="EndEvent_0x6ir2l">
-        <dc:Bounds x="1242" y="122" width="36" height="36" />
+        <dc:Bounds x="240" y="77" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1txfcpd_di" bpmnElement="Activity_01j9g7r">
-        <dc:Bounds x="970" y="90" width="100" height="80" />
+        <dc:Bounds x="440" y="77" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0v4oy83" bpmnElement="Activity_1d1xw38">
-        <dc:Bounds x="770" y="90" width="100" height="80" />
+      <bpmndi:BPMNShape id="EndEvent_0x6ir2l_di" bpmnElement="EndEvent_0x6ir2l">
+        <dc:Bounds x="652" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_16gzt2m_di" bpmnElement="SequenceFlow_16gzt2m">
-        <di:waypoint x="490" y="130" />
-        <di:waypoint x="560" y="130" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1kt2gsp_di" bpmnElement="Flow_1kt2gsp">
-        <di:waypoint x="1070" y="130" />
-        <di:waypoint x="1156" y="130" />
-        <di:waypoint x="1156" y="140" />
-        <di:waypoint x="1242" y="140" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0cyt133_di" bpmnElement="Flow_0cyt133">
-        <di:waypoint x="610" y="90" />
-        <di:waypoint x="610" y="70" />
-        <di:waypoint x="820" y="70" />
-        <di:waypoint x="820" y="90" />
+        <di:waypoint x="340" y="117" />
+        <di:waypoint x="440" y="117" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1jib8eb_di" bpmnElement="Flow_1jib8eb">
         <di:waypoint x="215" y="117" />
-        <di:waypoint x="303" y="117" />
-        <di:waypoint x="303" y="130" />
-        <di:waypoint x="390" y="130" />
+        <di:waypoint x="240" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ixd3wi_di" bpmnElement="Flow_1ixd3wi">
-        <di:waypoint x="870" y="130" />
-        <di:waypoint x="970" y="130" />
+      <bpmndi:BPMNEdge id="Flow_1kt2gsp_di" bpmnElement="Flow_1kt2gsp">
+        <di:waypoint x="540" y="117" />
+        <di:waypoint x="652" y="117" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

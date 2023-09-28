@@ -74,7 +74,7 @@ var PDFTQT = function () {
         let resizeTimer;
         let that = this;
         async function resizeFunction() {
-            let components = that.getComponents();
+            const components = that.getComponents();
             const scaleOld = that.scale;
             await that.reloadPdf(containerIdCurrent);
             const scaleNew = that.scale / scaleOld;
@@ -83,7 +83,7 @@ var PDFTQT = function () {
 
         window.addEventListener('resize', function () {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(resizeFunction, 350);
+            resizeTimer = setTimeout(resizeFunction, 500);
         });
 
         this.loadPdf = async function (containerId, pdfSrc) {
@@ -93,7 +93,7 @@ var PDFTQT = function () {
             container.style.width = "100%";
             container.style.height = "100vh";
             container.style.overflowY = "scroll";
-            let loadingTask = await pdfjsLib.getDocument(pdfSrc);
+            const loadingTask = await pdfjsLib.getDocument(pdfSrc);
             pdfLoad = await loadingTask.promise;
             await loadPage(container, pdfLoad, 1);
         }
@@ -312,7 +312,6 @@ var PDFTQT = function () {
         }
 
         function copyGroup(groupObject) {
-            debugger;
             const objects = groupObject.objects || groupObject._objects;
             const fText = new fabric.Text(groupObject.metadata.name, {
                 ...objects[1],

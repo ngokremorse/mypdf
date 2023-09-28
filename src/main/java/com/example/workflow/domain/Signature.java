@@ -3,8 +3,8 @@ package com.example.workflow.domain;
 public class Signature {
 
     private float left;
-    private float right;
-    private float with;
+    private float top;
+    private float width;
     private float height;
     private Metadata metadata;
 
@@ -46,20 +46,20 @@ public class Signature {
         this.left = left;
     }
 
-    public float getRight() {
-        return right;
+    public float getTop() {
+        return top;
     }
 
-    public void setRight(float right) {
-        this.right = right;
+    public void setTop(float top) {
+        this.top = top;
     }
 
-    public float getWith() {
-        return with;
+    public float getWidth() {
+        return width;
     }
 
-    public void setWith(float with) {
-        this.with = with;
+    public void setWidth(float width) {
+        this.width = width;
     }
 
     public float getHeight() {

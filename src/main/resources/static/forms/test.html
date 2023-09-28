@@ -1,6 +1,7 @@
 <form role="form" name="form">
     <button class="btn" id="addSign">Add Sign</button>
     <button class="btn" id="downloadFile">Download</button>
+    <button class="btn" id="signFile">Sign File</button>
     <div id="pdf-container"></div>
 
     <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
@@ -12,6 +13,13 @@
         var pdf = new PDFTQT();
         var pdfEditor = new pdf.PDFEditor();
         var vm = camForm.variableManager;
+        var camHttp;
+        var camUri;
+        inject(['$http', 'Uri', function ($http, Uri) {
+            camHttp = $http;
+            camUri = Uri;
+        }]);
+
         camForm.on('form-loaded', async function () {
             var link = location.protocol + "//" + location.host;
             await pdfEditor.loadPdf('pdf-container', link + '/pdf.pdf');
@@ -23,14 +31,33 @@
             submit(e, vm);
         });
 
+
         function submit(event, vm) {
-            let data =  pdfEditor.exportData();
+            let data = pdfEditor.exportData();
             vm.createVariable({
                 name: 'pdfData',
                 type: 'json',
                 value: data
             });
         }
+
+        document.body.querySelector("#signFile").addEventListener('click', () => {
+            const pdfData = pdfEditor.exportData();
+            var link = location.protocol + "//" + location.host;
+            camHttp.post(link + "/pdf/sign", {
+                scale: pdfData.scale,
+                signatures: pdfData.components
+            }, {responseType: 'blob'})
+                    .then(rep => {
+                        debugger;
+                        const url = URL.createObjectURL(rep.data);
+                        window.open(url);
+                        var a = document.createElement("a");
+                        a.href = url;
+                        a.download = "thanh.pdf";
+                        a.click();
+                    });
+        });
 
         document.body.querySelector('#addSign').addEventListener('click', () => {
             pdfEditor.addGroup();
