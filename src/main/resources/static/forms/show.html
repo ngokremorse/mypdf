@@ -22,7 +22,6 @@
             var link = location.protocol + "//" + location.host;
             await pdfEditor.loadPdf('pdf-container', link + '/pdf.pdf');
             pdfEditor.loadComponents(components, pdfEditor.scale / scaleOld);
-            console.log(pdfEditor.getComponents());
         });
 
         document.body.querySelector('#downloadFile').addEventListener('click', async () => {

@@ -1,7 +1,6 @@
 <form role="form" name="form">
     <button class="btn" id="addSign">Add Sign</button>
     <button class="btn" id="downloadFile">Download</button>
-    <button class="btn" id="signFile">Sign File</button>
     <div id="pdf-container"></div>
 
     <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
@@ -13,13 +12,6 @@
         var pdf = new PDFTQT();
         var pdfEditor = new pdf.PDFEditor();
         var vm = camForm.variableManager;
-        var camHttp;
-        var camUri;
-        inject(['$http', 'Uri', function ($http, Uri) {
-            camHttp = $http;
-            camUri = Uri;
-        }]);
-
         camForm.on('form-loaded', async function () {
             var link = location.protocol + "//" + location.host;
             await pdfEditor.loadPdf('pdf-container', link + '/pdf.pdf');
@@ -39,6 +31,32 @@
                 type: 'json',
                 value: data
             });
+        }
+
+        document.body.querySelector("#addIText").addEventListener('click', function () {
+                pdfEditor.addIText();
+        });
+
+        document.body.querySelector("#signFile").addEventListener("click", previewFile);
+
+        function previewFile() {
+            const pdfData = pdfEditor.exportData();
+            const scale = pdfData.scale;
+            const components = pdfData.components;
+
+            // send data to server, to sign and dowload file
+
+
+            fetch("http://localhost:8080/pdf/sign", {
+                method: "POST",
+                body: ""
+            })
+                    .then(rep => rep.arrayBuffer())
+                    .then(bytes => {
+                        var blob = new Blob([bytes], {type: "application/pdf"});
+                        const blobUrl = URL.createObjectURL(blob);
+                        window.open(blobUrl);
+                    });
         }
 
         document.body.querySelector("#signFile").addEventListener('click', () => {
