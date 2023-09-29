@@ -9,8 +9,8 @@ public class Signature {
     private Metadata metadata;
     private float cacheTranslationX;
     private float cacheTranslationY;
-    private float scaleX;
-    private float scaleY;
+    private float scaleX = 1f;
+    private float scaleY = 1f;
 
     public static class Metadata {
         private int pageActive;

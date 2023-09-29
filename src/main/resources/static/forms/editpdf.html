@@ -1,0 +1,154 @@
+<form role="form" name="form" enctype="multipart/form-data">
+    <button class="btn" id="addSign">Add Sign</button>
+    <button class="btn" id="downloadFile">Download</button>
+    <button class="btn" id="signFile">Sign File</button>
+    <button class="btn" id="addIText">Add Itext</button>
+    <input type="file" accept="application/pdf"
+           cam-variable-name="attachFile"
+           cam-variable-type="File"
+           cam-max-filesize="10000000" id="fileInput">
+    <div id="pdf-container"></div>
+
+    <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-lib/2.6.347_pdf.worker.min.js';</script>
+    <script src="/pdf-lib/4.3.0_fabric.min.js"></script>
+    <script src="/pdf-lib/pdf_lib.min.js"></script>
+    <script src="/pdf-lib/mypdf.js"></script>
+    <script cam-script type="text/form-script">
+        var pdf = new PDFTQT();
+        var pdfEditor = new pdf.PDFEditor();
+        var vm = camForm.variableManager;
+        var filePdf;
+        var camHttp;
+        var camUri;
+        inject(['$http', 'Uri', function ($http, Uri) {
+            camHttp = $http;
+            camUri = Uri;
+        }]);
+
+        camForm.on('form-loaded', async function () {
+            document.getElementById("fileInput").addEventListener('change', async function () {
+                if (this.files[0]) {
+                    filePdf = this.files[0];
+                    const pdfBytes = await filePdf.arrayBuffer();
+                    pdfEditor = new pdf.PDFEditor();
+                    await pdfEditor.loadPdf('pdf-container', pdfBytes);
+                }
+            });
+        });
+        camForm.on('variables-fetched', function () {
+            console.log(vm.variables.attachFile);
+        });
+        camForm.on('submit', function (e) {
+            submit(e, vm);
+        });
+
+        function submit(event, vm) {
+            let data = pdfEditor.exportData();
+            data = {
+                scale: data.scale,
+                components: data.components.map(item => {
+                    let copyItem = {
+                        _objects: item._objects,
+                        objects: item.objects,
+                        top: item.top,
+                        left: item.left,
+                        width: item.width,
+                        height: item.height,
+                        scaleX: item.scaleX,
+                        scaleY: item.scaleY,
+                        fill: item.fill,
+                        fontSize: item.fontSize,
+                        type: item.type,
+                        text: item.text,
+                        textLines: item.textLines,
+                        selectionColor: item.selectionColor,
+                        metadata: item.metadata
+                    };
+                    return copyItem;
+                })
+            }
+            console.log(data);
+            vm.createVariable({
+                name: 'pdfData',
+                type: 'json',
+                value: data
+            });
+        }
+
+        document.body.querySelector("#addIText").addEventListener('click', function () {
+            pdfEditor.addIText();
+        });
+
+        document.body.querySelector("#signFile").addEventListener("click", async function () {
+            const pdfData = pdfEditor.exportData();
+            var link = location.protocol + "//" + location.host;
+
+            const formData = new FormData();
+            formData.append("file", filePdf);
+            formData.append("scale", pdfData.scale);
+            formData.append("signatures", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "group").map(item => {
+                const object = item.toObject();
+                return {
+                    ...object
+                }
+            }))], {type: 'application/json'}));
+
+            formData.append("textInputs", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "i-text").map(item => {
+                return {
+                    ...item
+                }
+            }))], {type: 'application/json'}));
+
+            jQuery.ajax(link + "/pdf/sign", {
+                type: "post",
+                enctype: 'multipart/form-data',
+                data: formData,
+                cache: false,
+                processData: false,
+                contentType: false,
+                xhr: function () {
+                    var xhr = new XMLHttpRequest();
+                    xhr.responseType = 'blob';
+                    return xhr;
+                },
+                success: function (blob) {
+                    const url = URL.createObjectURL(blob);
+                    window.open(url);
+                    const downloadLink = document.createElement('a');
+
+                    downloadLink.href = url;
+                    downloadLink.download = "result.pdf";
+                    downloadLink.click();
+                    URL.revokeObjectURL(url);
+                }
+            });
+        });
+
+        document.body.querySelector('#addSign').addEventListener('click', () => {
+            pdfEditor.addGroup();
+        });
+        document.body.querySelector('#downloadFile').addEventListener('click', async () => {
+            const pdfByte = await pdfEditor.saveAsByte();
+            console.log(pdfByte);
+            const blob = new Blob([pdfByte], {type: 'application/pdf'});
+
+            // Create a temporary URL for the Blob
+            const url = URL.createObjectURL(blob);
+
+            // Create a link element
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'test.pdf';
+
+            // Append the link to the document body
+            document.body.appendChild(link);
+
+            // Trigger the click event to start the download
+            link.click();
+
+            // Clean up by revoking the URL object
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</form>

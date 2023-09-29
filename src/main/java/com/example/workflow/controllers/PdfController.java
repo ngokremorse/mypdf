@@ -2,7 +2,6 @@ package com.example.workflow.controllers;
 
 import com.example.workflow.domain.ITextInput;
 import com.example.workflow.domain.Signature;
-import com.example.workflow.dto.SignDto;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -11,14 +10,11 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -27,14 +23,14 @@ import java.util.List;
 @RequestMapping("pdf")
 public class PdfController {
 
-
-    @PostMapping(value = "/sign")
-    public ResponseEntity<InputStreamResource> test(@RequestBody SignDto signDto) throws Exception {
-        PDDocument document = PDDocument.load(new FileInputStream("D:\\Project\\bpm-camunda-7\\src\\main\\resources\\META-INF\\resources\\webjars\\camunda\\app\\tasklist\\scripts\\pdf-lib\\pdf.pdf"));
+    @PostMapping(value = "/sign", consumes = {"multipart/form-data"})
+    public ResponseEntity<InputStreamResource> test(@RequestParam("file") MultipartFile file,
+                                                    @RequestParam("scale") float scale,
+                                                    @RequestPart("signatures") List<Signature> signatures,
+                                                    @RequestPart("textInputs") List<ITextInput> textInputs) throws Exception {
+        PDDocument document = PDDocument.load(file.getInputStream());
+        file.getInputStream().close();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        float scale = signDto.getScale();
-        List<Signature> signatures = signDto.getSignatures();
-        List<ITextInput> textInputs = signDto.getTextInputs();
 
         signatures.forEach(item -> {
             float width = item.getWidth() / scale;

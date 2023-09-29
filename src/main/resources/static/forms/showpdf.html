@@ -1,0 +1,62 @@
+<form role="form" name="form" enctype="multipart/form-data">
+    <div id="pdf-container"></div>
+    <button class="btn" id="addSign">Add Sign</button>
+    <button class="btn" id="downloadFile">Download</button>
+    <input type="file" accept="application/pdf"
+           cam-variable-name="attachFile"
+           cam-variable-type="File"
+           cam-max-filesize="10000000" id="fileInput" style="display:none;">
+    <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-lib/2.6.347_pdf.worker.min.js';</script>
+    <script src="/pdf-lib/4.3.0_fabric.min.js"></script>
+    <script src="/pdf-lib/pdf_lib.min.js"></script>
+    <script src="/pdf-lib/mypdf.js"></script>
+    <script cam-script type="text/form-script">
+        let pdf = new PDFTQT();
+        let pdfEditor = new pdf.PDFEditor();
+        let vm = camForm.variableManager;
+        camForm.on('form-loaded', function () {
+            vm.fetchVariable('pdfData');
+        });
+
+        camForm.on('variables-fetched', async function () {
+            const pdfData = vm.variableValue('pdfData');
+            debugger;
+            const scaleOld = pdfData.scale;
+            const components = pdfData.components;
+            fetch(vm.variables.attachFile.contentUrl).then(rep => rep.arrayBuffer())
+                    .then(async (bytes) => {
+                        await pdfEditor.loadPdf('pdf-container',bytes);
+                        pdfEditor.loadComponents(components, pdfEditor.scale / scaleOld);
+                    });
+
+        });
+
+        document.body.querySelector('#downloadFile').addEventListener('click', async () => {
+            const pdfByte = await pdfEditor.saveAsByte();
+            console.log(pdfByte);
+            const blob = new Blob([pdfByte], {type: 'application/pdf'});
+
+            // Create a temporary URL for the Blob
+            const url = URL.createObjectURL(blob);
+
+            // Create a link element
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'test.pdf';
+
+            // Append the link to the document body
+            document.body.appendChild(link);
+
+            // Trigger the click event to start the download
+            link.click();
+
+            // Clean up by revoking the URL object
+            URL.revokeObjectURL(url);
+        });
+
+        document.body.querySelector('#addSign').addEventListener('click', () => {
+            pdfEditor.addGroup();
+        });
+    </script>
+</form>

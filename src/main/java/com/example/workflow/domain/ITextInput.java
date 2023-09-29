@@ -9,8 +9,8 @@ public class ITextInput {
     private String text;
     private String[] textLines;
     private float fontSize;
-    private float scaleX;
-    private float scaleY;
+    private float scaleX = 1f;
+    private float scaleY = 1f;
     private float cacheTranslationX;
     private float cacheTranslationY;
     private Signature.Metadata metadata;

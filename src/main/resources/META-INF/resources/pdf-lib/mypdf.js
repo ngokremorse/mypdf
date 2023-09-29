@@ -108,7 +108,7 @@ var PDFTQT = function () {
                 item.left = item.left * scaleNew;
                 item.width = item.width * scaleNew;
                 item.height = item.height * scaleNew;
-
+                debugger;
                 if (item.type === 'group') {
                     const objects = item.objects || item._objects;
                     objects.forEach(com => {
