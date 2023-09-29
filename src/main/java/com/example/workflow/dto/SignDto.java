@@ -1,5 +1,6 @@
 package com.example.workflow.dto;
 
+import com.example.workflow.domain.ITextInput;
 import com.example.workflow.domain.Signature;
 
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 public class SignDto {
 
     private List<Signature> signatures;
+    private List<ITextInput> textInputs;
     private float scale;
 
 
@@ -33,5 +35,13 @@ public class SignDto {
 
     public void setScale(float scale) {
         this.scale = scale;
+    }
+
+    public List<ITextInput> getTextInputs() {
+        return textInputs;
+    }
+
+    public void setTextInputs(List<ITextInput> textInputs) {
+        this.textInputs = textInputs;
     }
 }

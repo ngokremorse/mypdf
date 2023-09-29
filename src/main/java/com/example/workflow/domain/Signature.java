@@ -1,45 +1,21 @@
 package com.example.workflow.domain;
 
-import java.io.Serializable;
-
-public class Signature implements Serializable {
-
-    public Signature() {
-
-    }
-
-    public Signature(float left, float top, float with, float height, Metadata metadata, float scale) {
-        this.left = left;
-        this.top = top;
-        this.with = with;
-        this.height = height;
-        this.metadata = metadata;
-        this.scale = scale;
-    }
+public class Signature {
 
     private float left;
     private float top;
-    private float with;
+    private float width;
     private float height;
     private Metadata metadata;
-    private float scale;
+    private float cacheTranslationX;
+    private float cacheTranslationY;
+    private float scaleX;
+    private float scaleY;
 
-    public static class Metadata implements Serializable {
+    public static class Metadata {
         private int pageActive;
-        private String id;
+        private int id;
         private String name;
-        private boolean editable;
-
-        public Metadata() {
-
-        }
-
-        public Metadata(int pageActive, String id, String name, boolean editable) {
-            this.pageActive = pageActive;
-            this.id = id;
-            this.name = name;
-            this.editable = editable;
-        }
 
         public int getPageActive() {
             return pageActive;
@@ -49,11 +25,11 @@ public class Signature implements Serializable {
             this.pageActive = pageActive;
         }
 
-        public String getId() {
+        public int getId() {
             return id;
         }
 
-        public void setId(String id) {
+        public void setId(int id) {
             this.id = id;
         }
 
@@ -64,14 +40,22 @@ public class Signature implements Serializable {
         public void setName(String name) {
             this.name = name;
         }
+    }
 
-        public boolean isEditable() {
-            return editable;
-        }
+    public float getScaleX() {
+        return scaleX;
+    }
 
-        public void setEditable(boolean editable) {
-            this.editable = editable;
-        }
+    public void setScaleX(float scaleX) {
+        this.scaleX = scaleX;
+    }
+
+    public float getScaleY() {
+        return scaleY;
+    }
+
+    public void setScaleY(float scaleY) {
+        this.scaleY = scaleY;
     }
 
     public float getLeft() {
@@ -90,12 +74,12 @@ public class Signature implements Serializable {
         this.top = top;
     }
 
-    public float getWith() {
-        return with;
+    public float getWidth() {
+        return width;
     }
 
-    public void setWith(float with) {
-        this.with = with;
+    public void setWidth(float width) {
+        this.width = width;
     }
 
     public float getHeight() {
@@ -114,12 +98,19 @@ public class Signature implements Serializable {
         this.metadata = metadata;
     }
 
-    public float getScale() {
-        return scale;
+    public float getCacheTranslationX() {
+        return cacheTranslationX;
     }
 
-    public void setScale(float scale) {
-        this.scale = scale;
+    public void setCacheTranslationX(float cacheTranslationX) {
+        this.cacheTranslationX = cacheTranslationX;
+    }
+
+    public float getCacheTranslationY() {
+        return cacheTranslationY;
+    }
+
+    public void setCacheTranslationY(float cacheTranslationY) {
+        this.cacheTranslationY = cacheTranslationY;
     }
 }
-

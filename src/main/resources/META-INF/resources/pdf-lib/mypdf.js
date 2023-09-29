@@ -61,10 +61,14 @@ var PDFTQT = function () {
         }
 
         this.reloadPdf = async function () {
+            const components = that.getComponents();
+            const scaleOld = that.scale;
             pageCanvas = [];
             const container = document.getElementById(containerIdCurrent);
             container.innerHTML = "";
             await loadPage(container, pdfLoad, 1);
+            const scaleNew = that.scale / scaleOld;
+            this.loadComponents(components, scaleNew);
         }
 
         // ========= Interface ==========================
@@ -73,12 +77,9 @@ var PDFTQT = function () {
 
         let resizeTimer;
         let that = this;
+
         async function resizeFunction() {
-            const components = that.getComponents();
-            const scaleOld = that.scale;
             await that.reloadPdf(containerIdCurrent);
-            const scaleNew = that.scale / scaleOld;
-            that.loadComponents(components, scaleNew);
         }
 
         window.addEventListener('resize', function () {
@@ -103,28 +104,33 @@ var PDFTQT = function () {
         this.loadComponents = function (components, scaleNew) {
             scaleNew = scaleNew || 1;
             components.forEach(item => {
-                const objects = item.objects || item._objects;
-                objects.forEach(com => {
-                    com.width = com.width * scaleNew;
-                    com.height = com.height * scaleNew;
-                    if (com.fontSize) com.fontSize = com.fontSize * scaleNew;
-                });
                 item.top = item.top * scaleNew;
                 item.left = item.left * scaleNew;
                 item.width = item.width * scaleNew;
                 item.height = item.height * scaleNew;
+
                 if (item.type === 'group') {
+                    const objects = item.objects || item._objects;
+                    objects.forEach(com => {
+                        com.width = com.width * scaleNew;
+                        com.height = com.height * scaleNew;
+                        if (com.fontSize) com.fontSize = com.fontSize * scaleNew;
+                    });
                     loadGroupOnCanvas(item);
+                } else if (item.type === "i-text") {
+                    if (item.fontSize) item.fontSize = item.fontSize * scaleNew;
+                    loadITextOnCanvas(item);
                 }
             });
         }
 
-        this.addIText = function (text, width) {
+        this.addIText = function (text, width, fontSize) {
             width = width ? width : 75 * that.scale;
             text = text ? text : "Typing something";
+            fontSize = fontSize ? fontSize : 12;
             const itext = new fabric.IText(text, {
                 width: width,
-                fontSize: width * 15 / 100,
+                fontSize: fontSize,
                 left: 50,
                 top: 70,
                 fill: "black",
@@ -132,6 +138,12 @@ var PDFTQT = function () {
                 lockScalingFlip: true,
                 lockRotation: true
             });
+            let metadataMerge = {
+                name: text,
+                pageActive: canvasActive,
+                editable: true
+            };
+            itext.metadata = metadataMerge;
 
             const fCanvas = pageCanvas[canvasActive];
             fCanvas.add(itext);
@@ -176,8 +188,8 @@ var PDFTQT = function () {
                 left: left > 0 ? left : 0,
                 top: top > 0 ? top : 0,
                 lockScalingFlip: true,
-                lockScalingX: true,
-                lockScalingY: true,
+                // lockScalingX: true,
+                // lockScalingY: true,
                 lockRotation: true
             }
             const group = new fabric.Group([rect, fText], options);
@@ -213,8 +225,8 @@ var PDFTQT = function () {
                 height: height,
                 fill: background,
                 lockScalingFlip: true,
-                lockScalingX: true,
-                lockScalingY: true,
+                // lockScalingX: true,
+                // lockScalingY: true,
                 lockRotation: true
             });
             rect.metadata = metadataMerge;
@@ -303,6 +315,29 @@ var PDFTQT = function () {
             fCanvas.renderAll();
         }
 
+        function loadITextOnCanvas(ItextObject) {
+            const iText = new fabric.IText(ItextObject.text, {
+                text: ItextObject.text,
+                textLines: ItextObject.textLines,
+                height: ItextObject.height,
+                width: ItextObject.width,
+                fontSize: ItextObject.fontSize || 12,
+                left: ItextObject.left,
+                top: ItextObject.top,
+                fill: ItextObject.fill,
+                selectionColor: ItextObject.selectionColor,
+                lockScalingFlip: true,
+                lockRotation: true,
+                scaleX: ItextObject.scaleX,
+                scaleY: ItextObject.scaleY,
+                selectable: ItextObject.metadata.editable
+            });
+            iText.metadata = ItextObject.metadata;
+            const fCanvas = pageCanvas[ItextObject.metadata.pageActive];
+            fCanvas.add(iText);
+            fCanvas.renderAll();
+        }
+
         function copyGroup(groupObject) {
             const objects = groupObject.objects || groupObject._objects;
             const fText = new fabric.Text(groupObject.metadata.name, {
@@ -323,9 +358,11 @@ var PDFTQT = function () {
                 left: groupObject.left,
                 top: groupObject.top,
                 lockScalingFlip: true,
-                lockScalingX: true,
-                lockScalingY: true,
+                // lockScalingX: true,
+                // lockScalingY: true,
                 lockRotation: true,
+                scaleX: groupObject.scaleX,
+                scaleY: groupObject.scaleY,
                 selectable: groupObject.metadata.editable
             });
             groupCopy.metadata = groupObject.metadata;

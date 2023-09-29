@@ -17,6 +17,7 @@
 
         camForm.on('variables-fetched', async function () {
             const pdfData = vm.variableValue('pdfData');
+            debugger;
             const scaleOld = pdfData.scale;
             const components = pdfData.components;
             var link = location.protocol + "//" + location.host;

@@ -1,6 +1,8 @@
 <form role="form" name="form">
     <button class="btn" id="addSign">Add Sign</button>
     <button class="btn" id="downloadFile">Download</button>
+    <button class="btn" id="signFile">Sign File</button>
+    <button class="btn" id="addIText">Add Itext</button>
     <div id="pdf-container"></div>
 
     <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
@@ -12,6 +14,14 @@
         var pdf = new PDFTQT();
         var pdfEditor = new pdf.PDFEditor();
         var vm = camForm.variableManager;
+
+        var camHttp;
+        var camUri;
+        inject(['$http', 'Uri', function ($http, Uri) {
+            camHttp = $http;
+            camUri = Uri;
+        }]);
+
         camForm.on('form-loaded', async function () {
             var link = location.protocol + "//" + location.host;
             await pdfEditor.loadPdf('pdf-container', link + '/pdf.pdf');
@@ -23,7 +33,6 @@
             submit(e, vm);
         });
 
-
         function submit(event, vm) {
             let data = pdfEditor.exportData();
             vm.createVariable({
@@ -34,46 +43,25 @@
         }
 
         document.body.querySelector("#addIText").addEventListener('click', function () {
-                pdfEditor.addIText();
+            pdfEditor.addIText();
         });
 
-        document.body.querySelector("#signFile").addEventListener("click", previewFile);
-
-        function previewFile() {
-            const pdfData = pdfEditor.exportData();
-            const scale = pdfData.scale;
-            const components = pdfData.components;
-
-            // send data to server, to sign and dowload file
-
-
-            fetch("http://localhost:8080/pdf/sign", {
-                method: "POST",
-                body: ""
-            })
-                    .then(rep => rep.arrayBuffer())
-                    .then(bytes => {
-                        var blob = new Blob([bytes], {type: "application/pdf"});
-                        const blobUrl = URL.createObjectURL(blob);
-                        window.open(blobUrl);
-                    });
-        }
-
-        document.body.querySelector("#signFile").addEventListener('click', () => {
+        document.body.querySelector("#signFile").addEventListener("click", function () {
             const pdfData = pdfEditor.exportData();
             var link = location.protocol + "//" + location.host;
             camHttp.post(link + "/pdf/sign", {
                 scale: pdfData.scale,
-                signatures: pdfData.components
+                signatures: pdfData.components.filter(item => item.type === "group").map(item => {
+                    return {...item}
+                }),
+                textInputs: pdfData.components.filter(item => item.type === "i-text").map(item => {
+                    return {...item}
+                })
             }, {responseType: 'blob'})
                     .then(rep => {
-                        debugger;
                         const url = URL.createObjectURL(rep.data);
                         window.open(url);
-                        var a = document.createElement("a");
-                        a.href = url;
-                        a.download = "thanh.pdf";
-                        a.click();
+                        URL.revokeObjectURL(url);
                     });
         });
 
