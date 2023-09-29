@@ -1,0 +1,42 @@
+<form role="form" name="form">
+    <script src="/pdf-lib/2.6.347_pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-lib/2.6.347_pdf.worker.min.js';</script>
+    <script src="/pdf-lib/4.3.0_fabric.min.js"></script>
+    <script src="/pdf-lib/pdf_lib.min.js"></script>
+    <script src="/pdf-lib/mypdf.js"></script>
+    <script cam-script type="text/form-script">
+        var pdf = new PDFTQT();
+        var pdfEditor = new pdf.PDFEditor();
+        var vm = camForm.variableManager;
+
+        var camHttp;
+        var camUri;
+        inject(['$http', 'Uri', function ($http, Uri) {
+            camHttp = $http;
+            camUri = Uri;
+        }]);
+
+        camForm.on('form-loaded', function (e) {
+            vm.fetchVariable('users');
+        });
+
+        camForm.on('submit', function (e) {
+            submit(e, vm);
+        });
+
+        function submit(event, vm) {
+            console.log(vm.variables);
+            // update collection for camunda multi_instance.bpmn
+            vm.variables.users.value = ['thanhtq', 'thanhtq1', 'thanhtq2'];
+            vm.createVariable({
+                name: 'jsonValueTest',
+                type: 'json',
+                value: ["thanhtq", "thanhtq1"]
+                // valueInfo: {
+                //     serializationDataFormat: 'application/json',
+                //     objectTypeName: "java.util.ArrayList"
+                // }
+            });
+        }
+    </script>
+</form>
