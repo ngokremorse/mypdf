@@ -43,6 +43,7 @@ var PDFTQT = function () {
 
     //=======================  EDITOR  ====================
     this.PDFEditor = function () {
+        let that = this;
         this.scale = 1;
         let pageCanvas = [];
         let canvasActive = 0;
@@ -60,33 +61,39 @@ var PDFTQT = function () {
             }
         }
 
+        function createBoxShadow() {
+            const loadingBackground = document.createElement("div");
+            const content = document.createElement("h1");
+            content.innerText = "Loading...";
+            content.style.textAlign = "center";
+            content.style.margin = "50vh auto";
+            content.style.color = "red";
+            loadingBackground.appendChild(content);
+            loadingBackground.style.width = "100%";
+            loadingBackground.style.height = "100vh";
+            loadingBackground.style.position = "absolute";
+            loadingBackground.style.zIndex = "100";
+            loadingBackground.style.background = "rgba(180, 180, 180, 0.8)";
+            return loadingBackground;
+        }
+
         this.reloadPdf = async function () {
-            const components = that.getComponents();
-            const scaleOld = that.scale;
+            const components = this.getComponents();
+            const scaleOld = this.scale;
             pageCanvas = [];
             const container = document.getElementById(containerIdCurrent);
             container.innerHTML = "";
+            const boxShadow = createBoxShadow();
+            container.appendChild(boxShadow);
             await loadPage(container, pdfLoad, 1);
             const scaleNew = that.scale / scaleOld;
             this.loadComponents(components, scaleNew);
+            boxShadow.remove();
         }
 
         // ========= Interface ==========================
         // load pdf from url show on document element with containerId
         // pdfSrc: string | URL | TypedArray | ArrayBuffer | DocumentInitParameters
-
-        let resizeTimer;
-        let that = this;
-
-        async function resizeFunction() {
-            await that.reloadPdf(containerIdCurrent);
-        }
-
-        window.addEventListener('resize', function () {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(resizeFunction, 500);
-        });
-
         this.loadPdf = async function (containerId, pdfSrc) {
             containerIdCurrent = containerId;
             const container = document.getElementById(containerId);
@@ -97,7 +104,10 @@ var PDFTQT = function () {
             const loadingTask = await pdfjsLib.getDocument(pdfSrc);
             container.style.background = "gray";
             pdfLoad = await loadingTask.promise;
+            const boxShadow = createBoxShadow();
+            container.appendChild(boxShadow);
             await loadPage(container, pdfLoad, 1);
+            boxShadow.remove();
         }
 
         // load components, component is fabric object
@@ -108,7 +118,6 @@ var PDFTQT = function () {
                 item.left = item.left * scaleNew;
                 item.width = item.width * scaleNew;
                 item.height = item.height * scaleNew;
-                debugger;
                 if (item.type === 'group') {
                     const objects = item.objects || item._objects;
                     objects.forEach(com => {
@@ -268,7 +277,12 @@ var PDFTQT = function () {
         // ========== Util ================//
         async function loadPage(container, pdf, index) {
             if (index > pdf.numPages) return;
-            const page = await pdf.getPage(index);
+            let page = undefined;
+            if (index < pdf._transport.pageCache.length) {
+                page = pdf._transport.pageCache[index - 1];
+            } else {
+                page = await pdf.getPage(index);
+            }
             let viewport = page.getViewport({scale: 1});
             const scaleCurrent = Math.round(container.offsetWidth / viewport.width * 100) / 100;
             viewport = page.getViewport({scale: scaleCurrent});

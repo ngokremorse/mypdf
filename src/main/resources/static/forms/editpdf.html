@@ -3,6 +3,8 @@
     <button class="btn" id="downloadFile">Download</button>
     <button class="btn" id="signFile">Sign File</button>
     <button class="btn" id="addIText">Add Itext</button>
+    <button class="btn" id="saveBtn">Save</button>
+    <button class="btn" id="fullScreen">Full Screen</button>
     <input type="file" accept="application/pdf"
            cam-variable-name="attachFile"
            cam-variable-type="File"
@@ -13,20 +15,17 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-lib/2.6.347_pdf.worker.min.js';</script>
     <script src="/pdf-lib/4.3.0_fabric.min.js"></script>
     <script src="/pdf-lib/pdf_lib.min.js"></script>
+    <script src="/tt-camunda-form-module.js"></script>
     <script src="/pdf-lib/mypdf.js"></script>
     <script cam-script type="text/form-script">
+        window.camForm = camForm;
+        window.inject = inject;
+        onInit();
         var pdf = new PDFTQT();
         var pdfEditor = new pdf.PDFEditor();
-        var vm = camForm.variableManager;
         var filePdf;
-        var camHttp;
-        var camUri;
-        inject(['$http', 'Uri', function ($http, Uri) {
-            camHttp = $http;
-            camUri = Uri;
-        }]);
 
-        camForm.on('form-loaded', async function () {
+        camFormOnload(() => {
             document.getElementById("fileInput").addEventListener('change', async function () {
                 if (this.files[0]) {
                     filePdf = this.files[0];
@@ -36,19 +35,15 @@
                 }
             });
         });
-        camForm.on('variables-fetched', function () {
-            console.log(vm.variables.attachFile);
-        });
-        camForm.on('submit', function (e) {
-            submit(e, vm);
-        });
-
-        function submit(event, vm) {
+        camFormVariablesFetch(() => {
+            console.log(variableManager.variables.attachFile);
+        })
+        camFormSubmit(() => {
             let data = pdfEditor.exportData();
             data = {
                 scale: data.scale,
                 components: data.components.map(item => {
-                    let copyItem = {
+                    return {
                         _objects: item._objects,
                         objects: item.objects,
                         top: item.top,
@@ -65,16 +60,23 @@
                         selectionColor: item.selectionColor,
                         metadata: item.metadata
                     };
-                    return copyItem;
                 })
             }
-            console.log(data);
-            vm.createVariable({
+            variableManager.createVariable({
                 name: 'pdfData',
                 type: 'json',
                 value: data
             });
-        }
+        })
+        document.body.querySelector("#fullScreen").addEventListener('click', async function () {
+            await pdfEditor.reloadPdf();
+        });
+        document.body.querySelector("#saveBtn").addEventListener('click', async function () {
+            processApi.createOrUpdateFile("attachFile", filePdf, function (rep) {
+                console.log("upload file success!");
+            });
+            $scope.save();
+        });
 
         document.body.querySelector("#addIText").addEventListener('click', function () {
             pdfEditor.addIText();
@@ -82,15 +84,13 @@
 
         document.body.querySelector("#signFile").addEventListener("click", async function () {
             const pdfData = pdfEditor.exportData();
-            var link = location.protocol + "//" + location.host;
 
             const formData = new FormData();
             formData.append("file", filePdf);
             formData.append("scale", pdfData.scale);
             formData.append("signatures", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "group").map(item => {
-                const object = item.toObject();
                 return {
-                    ...object
+                    ...item.toObject()
                 }
             }))], {type: 'application/json'}));
 
@@ -100,29 +100,23 @@
                 }
             }))], {type: 'application/json'}));
 
-            jQuery.ajax(link + "/pdf/sign", {
-                type: "post",
-                enctype: 'multipart/form-data',
+            camHttp({
+                url: domainUrl + "/pdf/sign",
                 data: formData,
-                cache: false,
-                processData: false,
-                contentType: false,
-                xhr: function () {
-                    var xhr = new XMLHttpRequest();
-                    xhr.responseType = 'blob';
-                    return xhr;
-                },
-                success: function (blob) {
-                    const url = URL.createObjectURL(blob);
-                    window.open(url);
-                    const downloadLink = document.createElement('a');
+                headers: {"Content-Type": undefined},
+                method: "post",
+                responseType: 'blob'
+            })
+                    .then(rep => {
+                        const url = URL.createObjectURL(rep.data);
+                        window.open(url);
+                        const downloadLink = document.createElement('a');
 
-                    downloadLink.href = url;
-                    downloadLink.download = "result.pdf";
-                    downloadLink.click();
-                    URL.revokeObjectURL(url);
-                }
-            });
+                        downloadLink.href = url;
+                        downloadLink.download = "result.pdf";
+                        downloadLink.click();
+                        URL.revokeObjectURL(url);
+                    });
         });
 
         document.body.querySelector('#addSign').addEventListener('click', () => {
@@ -130,7 +124,6 @@
         });
         document.body.querySelector('#downloadFile').addEventListener('click', async () => {
             const pdfByte = await pdfEditor.saveAsByte();
-            console.log(pdfByte);
             const blob = new Blob([pdfByte], {type: 'application/pdf'});
 
             // Create a temporary URL for the Blob
