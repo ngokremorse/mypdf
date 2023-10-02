@@ -16,13 +16,17 @@
         });
 
         document.body.querySelector("#cancelAllTaskBtn").addEventListener('click', function () {
-            camHttp.post(camUri.appUri('engine://engine/:engine/message/'),
-                    {
-                        messageName: "EndTasks"
-                    })
-                    .then((data) => {
-                        console.log(data);
-                    });
+            camHttp({
+                url: camUri.appUri('engine://engine/:engine/message/'),
+                data: {
+                    messageName: "EndTasks"
+                },
+                headers: {"Content-Type": undefined},
+                method: "post"
+            })
+            .then(rep => {
+                console.log(rep);
+            });
         });
     </script>
 </form>

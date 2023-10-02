@@ -36,8 +36,10 @@ public class PdfController {
 //        String resourcePath = resourceDirectory.toFile().getAbsolutePath();
         URL resource = getClass().getResource("/META-INF/resources/signature.png");
         signatures.forEach(item -> {
-            float width = item.getWidth() / scale;
-            float height = item.getHeight() / scale;
+            float scaleX = item.getScaleX();
+            float scaleY = item.getScaleY();
+            float width = item.getWidth() / scale * scaleX;
+            float height = item.getHeight() / scale * scaleY ;
             float left = item.getLeft() / scale;
             float top = item.getTop() / scale;
             // get page
@@ -62,7 +64,6 @@ public class PdfController {
             float height = item.getHeight() / scale;
             float fontSize = item.getFontSize() / scale * scaleY;
             String text = item.getText();
-//            String[] textLines = item.getTextLines();
             PDPage page = document.getPage(item.getMetadata().getPageActive());
             try {
                 PDPageContentStream contentStream = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true);

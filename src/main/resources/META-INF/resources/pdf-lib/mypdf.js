@@ -111,23 +111,23 @@ var PDFTQT = function () {
         }
 
         // load components, component is fabric object
-        this.loadComponents = function (components, scale) {
-            scale = scale || 1;
+        this.loadComponents = function (components, scaleNew) {
+            scaleNew = scaleNew || 1;
             components.forEach(item => {
-                item.top = item.top * scale;
-                item.left = item.left * scale;
-                item.width = item.width * scale;
-                item.height = item.height * scale;
+                item.top = item.top * scaleNew;
+                item.left = item.left * scaleNew;
+                item.width = item.width * scaleNew;
+                item.height = item.height * scaleNew;
                 if (item.type === 'group') {
                     const objects = item.objects || item._objects;
                     objects.forEach(com => {
-                        com.width = com.width * scale;
-                        com.height = com.height * scale;
-                        if (com.fontSize) com.fontSize = com.fontSize * scale;
+                        com.width = com.width * scaleNew;
+                        com.height = com.height * scaleNew;
+                        if (com.fontSize) com.fontSize = com.fontSize * scaleNew;
                     });
                     loadGroupOnCanvas(item);
                 } else if (item.type === "i-text") {
-                    if (item.fontSize) item.fontSize = item.fontSize * scale;
+                    if (item.fontSize) item.fontSize = item.fontSize * scaleNew;
                     loadITextOnCanvas(item);
                 }
             });

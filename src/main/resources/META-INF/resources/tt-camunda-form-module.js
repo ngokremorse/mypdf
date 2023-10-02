@@ -39,12 +39,47 @@ function camFormSubmit(handle) {
     camForm.on('submit', handle);
 }
 
+window.formApi = {
+    /**
+     *
+     * @param {String} name
+     * @param {Object} type - JSON, String, Primitives
+     * @param {Object} value - String, Array, Primitives
+     */
+
+    getVariables: function () {
+        return variableManager.variables;
+    },
+    createVariable: function (name, type, value) {
+        variableManager.createVariable({
+            name: name,
+            type: type,
+            value: value
+        })
+    },
+    /**
+     *
+     * @param {String} name
+     */
+    fetchVariable: function (name) {
+        variableManager.fetchVariable(name);
+    },
+    /**
+     *
+     * @param {String} name
+     * @returns {*}
+     */
+    getVariable: function (name) {
+        return variableManager.variables[name];
+    }
+}
+
 window.processApi = {
     /**
      * @param {String} variableName
      * @param {Blob | File} fileInput
-     * @param {Function} handleSuccess
-     * @param {Function} handleError
+     * @param {Function} [handleSuccess]
+     * @param {Function} [handleError]
      */
     createOrUpdateFile: function (variableName, fileInput, handleSuccess, handleError) {
         const url = `${domainUrl}/engine-rest/process-instance/${processInstanceId}/variables/${variableName}/data`
@@ -59,6 +94,20 @@ window.processApi = {
         })
             .then(handleSuccess)
             .catch(handleError);
+    },
+    /**
+     *
+     * @param variableName
+     * @param {Object} data
+     * @param {String} data.type
+     * @param {Object} data.value
+     * @param {String} data.name
+     * @param {Function} done
+     * @param {String} [processInstanceId]
+     */
+    createOrUpdateVariable: function (data, done, processInstanceId) {
+        processInstanceId = processInstanceId ? processInstanceId : window.processInstanceId;
+        camForm.client.resource("process-instance").setVariable(processInstanceId, data, done);
     },
     task: {
         /**

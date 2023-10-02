@@ -20,25 +20,16 @@
         });
 
         camFormOnload(function (){
-            variableManager.fetchVariable('users');
+            formApi.fetchVariable('users');
         });
         camFormSubmit(function () {
             submit();
         })
 
         function submit() {
-            console.log(variableManager.variables);
+            console.log(formApi.getVariables());
             // update collection for camunda multi_instance.bpmn
-            variableManager.variables.users.value = ['thanhtq', 'thanhtq1', 'thanhtq2'];
-            variableManager.createVariable({
-                name: 'jsonValueTest',
-                type: 'json',
-                value: ["thanhtq", "thanhtq1"]
-                // valueInfo: {
-                //     serializationDataFormat: 'application/json',
-                //     objectTypeName: "java.util.ArrayList"
-                // }
-            });
+            formApi.getVariable('users').value = ['thanhtq', 'thanhtq1', 'thanhtq2'];
         }
     </script>
 </form>
