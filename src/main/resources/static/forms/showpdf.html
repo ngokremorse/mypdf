@@ -10,28 +10,29 @@
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-lib/2.6.347_pdf.worker.min.js';</script>
     <script src="/pdf-lib/4.3.0_fabric.min.js"></script>
     <script src="/pdf-lib/pdf_lib.min.js"></script>
+    <script src="/tt-camunda-form-module.js"></script>
     <script src="/pdf-lib/mypdf.js"></script>
     <script cam-script type="text/form-script">
+        window.camForm = camForm;
+        window.inject = inject;
+        onInit();
         let pdf = new PDFTQT();
         let pdfEditor = new pdf.PDFEditor();
-        let vm = camForm.variableManager;
-        camForm.on('form-loaded', function () {
-            vm.fetchVariable('pdfData');
+        camFormOnload(() => {
+            variableManager.fetchVariable('pdfData');
         });
 
-        camForm.on('variables-fetched', async function () {
-            const pdfData = vm.variableValue('pdfData');
+        camFormVariablesFetch(() => {
+            const pdfData = variableManager.variableValue('pdfData');
             debugger;
             const scaleOld = pdfData.scale;
             const components = pdfData.components;
-            fetch(vm.variables.attachFile.contentUrl).then(rep => rep.arrayBuffer())
+            fetch(variableManager.variables.attachFile.contentUrl).then(rep => rep.arrayBuffer())
                     .then(async (bytes) => {
-                        await pdfEditor.loadPdf('pdf-container',bytes);
+                        await pdfEditor.loadPdf('pdf-container', bytes);
                         pdfEditor.loadComponents(components, pdfEditor.scale / scaleOld);
                     });
-
         });
-
         document.body.querySelector('#downloadFile').addEventListener('click', async () => {
             const pdfByte = await pdfEditor.saveAsByte();
             console.log(pdfByte);

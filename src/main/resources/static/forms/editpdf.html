@@ -24,7 +24,6 @@
         var pdf = new PDFTQT();
         var pdfEditor = new pdf.PDFEditor();
         var filePdf;
-
         camFormOnload(() => {
             document.getElementById("fileInput").addEventListener('change', async function () {
                 if (this.files[0]) {
@@ -43,13 +42,15 @@
             data = {
                 scale: data.scale,
                 components: data.components.map(item => {
+                    const boundingRect = item.getBoundingRect();
+                    debugger;
                     return {
                         _objects: item._objects,
                         objects: item.objects,
-                        top: item.top,
-                        left: item.left,
-                        width: item.width,
-                        height: item.height,
+                        top: boundingRect.top,
+                        left: boundingRect.left,
+                        width: boundingRect.width,
+                        height: boundingRect.height,
                         scaleX: item.scaleX,
                         scaleY: item.scaleY,
                         fill: item.fill,
@@ -84,19 +85,29 @@
 
         document.body.querySelector("#signFile").addEventListener("click", async function () {
             const pdfData = pdfEditor.exportData();
-
             const formData = new FormData();
             formData.append("file", filePdf);
             formData.append("scale", pdfData.scale);
             formData.append("signatures", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "group").map(item => {
+                const boundingRect = item.getBoundingRect();
                 return {
-                    ...item.toObject()
+                    ...item.toObject(),
+                    height: boundingRect.height,
+                    width: boundingRect.width,
+                    left: boundingRect.left,
+                    top: boundingRect.top
                 }
             }))], {type: 'application/json'}));
 
             formData.append("textInputs", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "i-text").map(item => {
+                const boundingRect = item.getBoundingRect();
                 return {
-                    ...item
+                    ...item,
+                    lineHeight: item.lineHeight,
+                    height: boundingRect.height,
+                    width: boundingRect.width,
+                    left: boundingRect.left,
+                    top: boundingRect.top
                 }
             }))], {type: 'application/json'}));
 

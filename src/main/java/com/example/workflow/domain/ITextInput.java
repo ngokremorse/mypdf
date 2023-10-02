@@ -13,9 +13,10 @@ public class ITextInput {
     private float scaleY = 1f;
     private float cacheTranslationX;
     private float cacheTranslationY;
+    private float lineHeight;
     private Signature.Metadata metadata;
 
-    public ITextInput(float top, float left, float width, float height, String text, String[] textLines, float fontSize) {
+    public ITextInput(float top, float left, float width, float height, String text, String[] textLines, float fontSize, float scaleX, float scaleY, float cacheTranslationX, float cacheTranslationY, float padding, Signature.Metadata metadata) {
         this.top = top;
         this.left = left;
         this.width = width;
@@ -23,10 +24,23 @@ public class ITextInput {
         this.text = text;
         this.textLines = textLines;
         this.fontSize = fontSize;
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
+        this.cacheTranslationX = cacheTranslationX;
+        this.cacheTranslationY = cacheTranslationY;
+        this.metadata = metadata;
     }
 
     public  ITextInput(){
 
+    }
+
+    public float getLineHeight() {
+        return lineHeight;
+    }
+
+    public void setLineHeight(float lineHeight) {
+        this.lineHeight = lineHeight;
     }
 
     public float getTop() {

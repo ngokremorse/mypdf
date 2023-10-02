@@ -8,7 +8,6 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("pdf")
@@ -42,15 +40,13 @@ public class PdfController {
             float height = item.getHeight() / scale;
             float left = item.getLeft() / scale;
             float top = item.getTop() / scale;
-            float scaleX = item.getScaleX();
-            float scaleY = item.getScaleY();
             // get page
             PDPage page = document.getPage(item.getMetadata().getPageActive());
             // load sign image
             try {
                 PDImageXObject pdImage = PDImageXObject.createFromFile(resource.getPath(), document);
                 PDPageContentStream contentStream = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true);
-                contentStream.drawImage(pdImage, left, page.getCropBox().getUpperRightY() - top - height * scaleY, width * scaleX, height * scaleY);
+                contentStream.drawImage(pdImage, left, page.getCropBox().getUpperRightY() - top - height, width, height);
                 contentStream.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -60,34 +56,28 @@ public class PdfController {
         InputStream fontResource = getClass().getResourceAsStream("/META-INF/resources/times.ttf");
         PDType0Font fontResourceLoad = PDType0Font.load(document, fontResource);
         textInputs.forEach(item -> {
-
-            float scaleX = item.getScaleX();
             float scaleY = item.getScaleY();
             float left = item.getLeft() / scale;
             float top = item.getTop() / scale;
-            float height = item.getHeight() / scale * scaleY;
+            float height = item.getHeight() / scale;
             float fontSize = item.getFontSize() / scale * scaleY;
-            String[] textLines = item.getTextLines();
-
+            String text = item.getText();
+//            String[] textLines = item.getTextLines();
             PDPage page = document.getPage(item.getMetadata().getPageActive());
-
             try {
                 PDPageContentStream contentStream = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true);
                 contentStream.beginText();
                 contentStream.setFont(fontResourceLoad, fontSize);
-                float heightFont = fontResourceLoad.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize;
-                Arrays.stream(textLines).forEach(text -> {
-                    try {
-                        contentStream.newLineAtOffset(left, page.getCropBox().getUpperRightY() - top - height + fontSize);
-                        contentStream.showText(text);
-                        contentStream.newLine();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+                contentStream.newLineAtOffset(left, page.getCropBox().getUpperRightY() - top - height + height / 4);
+                try {
+                    contentStream.showText(text);
+                    contentStream.newLine();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 contentStream.endText();
                 contentStream.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 

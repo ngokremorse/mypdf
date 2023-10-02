@@ -111,23 +111,23 @@ var PDFTQT = function () {
         }
 
         // load components, component is fabric object
-        this.loadComponents = function (components, scaleNew) {
-            scaleNew = scaleNew || 1;
+        this.loadComponents = function (components, scale) {
+            scale = scale || 1;
             components.forEach(item => {
-                item.top = item.top * scaleNew;
-                item.left = item.left * scaleNew;
-                item.width = item.width * scaleNew;
-                item.height = item.height * scaleNew;
+                item.top = item.top * scale;
+                item.left = item.left * scale;
+                item.width = item.width * scale;
+                item.height = item.height * scale;
                 if (item.type === 'group') {
                     const objects = item.objects || item._objects;
                     objects.forEach(com => {
-                        com.width = com.width * scaleNew;
-                        com.height = com.height * scaleNew;
-                        if (com.fontSize) com.fontSize = com.fontSize * scaleNew;
+                        com.width = com.width * scale;
+                        com.height = com.height * scale;
+                        if (com.fontSize) com.fontSize = com.fontSize * scale;
                     });
                     loadGroupOnCanvas(item);
                 } else if (item.type === "i-text") {
-                    if (item.fontSize) item.fontSize = item.fontSize * scaleNew;
+                    if (item.fontSize) item.fontSize = item.fontSize * scale;
                     loadITextOnCanvas(item);
                 }
             });
@@ -140,19 +140,18 @@ var PDFTQT = function () {
             const itext = new fabric.IText(text, {
                 width: width,
                 fontSize: fontSize,
-                left: 50,
-                top: 70,
+                left: mousePosition.x,
+                top: mousePosition.y,
                 fill: "black",
                 selectionColor: "rgba(0,0,255,0.5)",
                 lockScalingFlip: true,
                 lockRotation: true
             });
-            let metadataMerge = {
+            itext.metadata = {
                 name: text,
                 pageActive: canvasActive,
                 editable: true
             };
-            itext.metadata = metadataMerge;
 
             const fCanvas = pageCanvas[canvasActive];
             fCanvas.add(itext);
@@ -323,36 +322,6 @@ var PDFTQT = function () {
         }
 
         function loadGroupOnCanvas(groupObject) {
-            const groupCopy = copyGroup(groupObject);
-            const fCanvas = pageCanvas[groupObject.metadata.pageActive];
-            fCanvas.add(groupCopy);
-            fCanvas.renderAll();
-        }
-
-        function loadITextOnCanvas(ItextObject) {
-            const iText = new fabric.IText(ItextObject.text, {
-                text: ItextObject.text,
-                textLines: ItextObject.textLines,
-                height: ItextObject.height,
-                width: ItextObject.width,
-                fontSize: ItextObject.fontSize || 12,
-                left: ItextObject.left,
-                top: ItextObject.top,
-                fill: ItextObject.fill,
-                selectionColor: ItextObject.selectionColor,
-                lockScalingFlip: true,
-                lockRotation: true,
-                scaleX: ItextObject.scaleX,
-                scaleY: ItextObject.scaleY,
-                selectable: ItextObject.metadata.editable
-            });
-            iText.metadata = ItextObject.metadata;
-            const fCanvas = pageCanvas[ItextObject.metadata.pageActive];
-            fCanvas.add(iText);
-            fCanvas.renderAll();
-        }
-
-        function copyGroup(groupObject) {
             const objects = groupObject.objects || groupObject._objects;
             const fText = new fabric.Text(groupObject.metadata.name, {
                 ...objects[1],
@@ -380,7 +349,35 @@ var PDFTQT = function () {
                 selectable: groupObject.metadata.editable
             });
             groupCopy.metadata = groupObject.metadata;
-            return groupCopy;
+            const fCanvas = pageCanvas[groupObject.metadata.pageActive];
+            fCanvas.add(groupCopy);
+            fCanvas.renderAll();
+        }
+
+        function loadITextOnCanvas(ItextObject) {
+            const iText = new fabric.IText(ItextObject.text, {
+                text: ItextObject.text,
+                textLines: ItextObject.textLines,
+                height: ItextObject.height,
+                width: ItextObject.width,
+                fontSize: ItextObject.fontSize || 12,
+                left: ItextObject.left,
+                top: ItextObject.top,
+                fill: ItextObject.fill,
+                selectionColor: ItextObject.selectionColor,
+                lockScalingFlip: true,
+                lockRotation: true,
+                scaleX: ItextObject.scaleX,
+                scaleY: ItextObject.scaleY
+            });
+            if (!ItextObject.metadata.editable) {
+                iText.selectable = false;
+                iText.isEditing = false;
+            }
+            iText.metadata = ItextObject.metadata;
+            const fCanvas = pageCanvas[ItextObject.metadata.pageActive];
+            fCanvas.add(iText);
+            fCanvas.renderAll();
         }
     }
 }
