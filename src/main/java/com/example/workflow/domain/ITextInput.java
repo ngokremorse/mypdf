@@ -14,25 +14,88 @@ public class ITextInput {
     private float cacheTranslationX;
     private float cacheTranslationY;
     private float lineHeight;
-    private Signature.Metadata metadata;
+    private Rect rect;
+    private Metadata metadata;
+    public static class Rect {
+        private float left;
+        private float top;
+        private float width;
+        private float height;
 
-    public ITextInput(float top, float left, float width, float height, String text, String[] textLines, float fontSize, float scaleX, float scaleY, float cacheTranslationX, float cacheTranslationY, float padding, Signature.Metadata metadata) {
-        this.top = top;
-        this.left = left;
-        this.width = width;
-        this.height = height;
-        this.text = text;
-        this.textLines = textLines;
-        this.fontSize = fontSize;
-        this.scaleX = scaleX;
-        this.scaleY = scaleY;
-        this.cacheTranslationX = cacheTranslationX;
-        this.cacheTranslationY = cacheTranslationY;
-        this.metadata = metadata;
+        public float getLeft() {
+            return left;
+        }
+
+        public void setLeft(float left) {
+            this.left = left;
+        }
+
+        public float getTop() {
+            return top;
+        }
+
+        public void setTop(float top) {
+            this.top = top;
+        }
+
+        public float getWidth() {
+            return width;
+        }
+
+        public void setWidth(float width) {
+            this.width = width;
+        }
+
+        public float getHeight() {
+            return height;
+        }
+
+        public void setHeight(float height) {
+            this.height = height;
+        }
     }
+    public static class Metadata {
+        private int pageActive;
+        private int id;
+        private String name;
+
+        public int getPageActive() {
+            return pageActive;
+        }
+
+        public void setPageActive(int pageActive) {
+            this.pageActive = pageActive;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+
 
     public  ITextInput(){
 
+    }
+
+    public Rect getRect() {
+        return rect;
+    }
+
+    public void setRect(Rect rect) {
+        this.rect = rect;
     }
 
     public float getLineHeight() {
@@ -99,11 +162,11 @@ public class ITextInput {
         this.textLines = textLines;
     }
 
-    public Signature.Metadata getMetadata() {
+    public Metadata getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Signature.Metadata metadata) {
+    public void setMetadata(Metadata metadata) {
         this.metadata = metadata;
     }
 

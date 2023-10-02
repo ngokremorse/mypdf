@@ -42,7 +42,7 @@
             data = {
                 scale: data.scale,
                 components: data.components.map(item => {
-                    const boundingRect = item.getBoundingRect();
+                    const boundingRect = item.getBoundingRect(true, true);
                     debugger;
                     return {
                         _objects: item._objects,
@@ -59,7 +59,8 @@
                         text: item.text,
                         textLines: item.textLines,
                         selectionColor: item.selectionColor,
-                        metadata: item.metadata
+                        metadata: item.metadata,
+                        rect: boundingRect
                     };
                 })
             }
@@ -86,6 +87,7 @@
             formData.append("scale", pdfData.scale);
             formData.append("signatures", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "group").map(item => {
                 return {
+                    rect: item.getBoundingRect(),
                     metadata: item.metadata,
                     scaleX: item.scaleX,
                     scaleY: item.scaleY,
@@ -99,6 +101,7 @@
             formData.append("textInputs", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "i-text").map(item => {
                 const boundingRect = item.getBoundingRect();
                 return {
+                    rect: boundingRect,
                     text: item.text,
                     metadata: item.metadata,
                     scaleX: item.scaleX,
