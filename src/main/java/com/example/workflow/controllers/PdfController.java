@@ -26,22 +26,17 @@ public class PdfController {
 
     @PostMapping(value = "/sign", consumes = {"multipart/form-data"})
     public ResponseEntity<InputStreamResource> test(@RequestParam("file") MultipartFile file,
-                                                    @RequestParam("scale") float scale,
                                                     @RequestPart("signatures") List<Signature> signatures,
                                                     @RequestPart("textInputs") List<ITextInput> textInputs) throws Exception {
         PDDocument document = PDDocument.load(file.getInputStream());
         file.getInputStream().close();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        Path resourceDirectory = Paths.get("src", "main", "resources");
-//        String resourcePath = resourceDirectory.toFile().getAbsolutePath();
         URL resource = getClass().getResource("/META-INF/resources/signature.png");
         signatures.forEach(item -> {
-            float scaleX = item.getScaleX();
-            float scaleY = item.getScaleY();
-            float width = item.getWidth() / scale * scaleX;
-            float height = item.getHeight() / scale * scaleY ;
-            float left = item.getLeft() / scale;
-            float top = item.getTop() / scale;
+            float width = item.getWidth() ;
+            float height = item.getHeight() ;
+            float left = item.getLeft();
+            float top = item.getTop();
             // get page
             PDPage page = document.getPage(item.getMetadata().getPageActive());
             // load sign image
@@ -58,11 +53,10 @@ public class PdfController {
         InputStream fontResource = getClass().getResourceAsStream("/META-INF/resources/times.ttf");
         PDType0Font fontResourceLoad = PDType0Font.load(document, fontResource);
         textInputs.forEach(item -> {
-            float scaleY = item.getScaleY();
-            float left = item.getLeft() / scale;
-            float top = item.getTop() / scale;
-            float height = item.getHeight() / scale;
-            float fontSize = item.getFontSize() / scale * scaleY;
+            float left = item.getLeft();
+            float top = item.getTop() ;
+            float height = item.getHeight();
+            float fontSize = item.getFontSize();
             String text = item.getText();
             PDPage page = document.getPage(item.getMetadata().getPageActive());
             try {

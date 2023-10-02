@@ -44,7 +44,7 @@ var PDFTQT = function () {
     //=======================  EDITOR  ====================
     this.PDFEditor = function () {
         let that = this;
-        this.scale = 1;
+        this.scalePage = 1;
         let pageCanvas = [];
         let canvasActive = 0;
         let pdfLoad;
@@ -56,7 +56,7 @@ var PDFTQT = function () {
 
         this.exportData = function () {
             return {
-                scale: this.scale,
+                scalePage: this.scalePage,
                 components: this.getComponents()
             }
         }
@@ -79,14 +79,14 @@ var PDFTQT = function () {
 
         this.reloadPdf = async function () {
             const components = this.getComponents();
-            const scaleOld = this.scale;
+            const scaleOld = this.scalePage;
             pageCanvas = [];
             const container = document.getElementById(containerIdCurrent);
             container.innerHTML = "";
             const boxShadow = createBoxShadow();
             container.appendChild(boxShadow);
             await loadPage(container, pdfLoad, 1);
-            const scaleNew = that.scale / scaleOld;
+            const scaleNew = that.scalePage / scaleOld;
             this.loadComponents(components, scaleNew);
             boxShadow.remove();
         }
@@ -134,7 +134,7 @@ var PDFTQT = function () {
         }
 
         this.addIText = function (text, width, fontSize) {
-            width = width ? width : 75 * that.scale;
+            width = width ? width : 75 * that.scalePage;
             text = text ? text : "Typing something";
             fontSize = fontSize ? fontSize : 12;
             const itext = new fabric.IText(text, {
@@ -160,8 +160,8 @@ var PDFTQT = function () {
 
         }
         this.addGroup = function (text, width, height, background, metadata) {
-            width = width ? width : 75 * that.scale;
-            height = height ? height : 50 * that.scale;
+            width = width ? width : 75 * that.scalePage;
+            height = height ? height : 50 * that.scalePage;
             background = background ? background : 'green';
             text = text ? text : Date.now().toString().substr(0, 3);
             let left = mousePosition.x - width / 2;
@@ -283,9 +283,8 @@ var PDFTQT = function () {
                 page = await pdf.getPage(index);
             }
             let viewport = page.getViewport({scale: 1});
-            const scaleCurrent = Math.round(container.offsetWidth / viewport.width * 100) / 100;
-            viewport = page.getViewport({scale: scaleCurrent});
-            that.scale = scaleCurrent;
+            that.scalePage = Math.round(container.offsetWidth / viewport.width * 100) / 100;
+            viewport = page.getViewport({scale: that.scalePage});
             const canvas = document.createElement('canvas');
             canvas.className = 'pdf-canvas';
             canvas.height = viewport.height;

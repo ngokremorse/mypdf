@@ -26,7 +26,6 @@
         camFormVariablesFetch(async () => {
             console.log(window.processInstanceId);
             const pdfData = formApi.getVariable('pdfData').value;
-            debugger;
             const scaleOld = pdfData.scale;
             const components = pdfData.components;
             fetch(formApi.getVariable('attachFile').contentUrl)
@@ -35,7 +34,7 @@
                         const filePdfBlob = new Blob([new Uint8Array(bytes)], {type:'application/pdf'});
                         filePdf = new File([filePdfBlob], "attachFile.pdf", {type:'application/pdf'});
                         await pdfEditor.loadPdf('pdf-container', bytes);
-                        pdfEditor.loadComponents(components, pdfEditor.scale / scaleOld);
+                        pdfEditor.loadComponents(components, pdfEditor.scalePage / scaleOld);
                     });
         });
         document.body.querySelector("#signFile").addEventListener("click", async function () {

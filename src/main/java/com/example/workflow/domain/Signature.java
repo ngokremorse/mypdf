@@ -7,10 +7,6 @@ public class Signature {
     private float width;
     private float height;
     private Metadata metadata;
-    private Rect rect;
-    private float scaleX = 1f;
-    private float scaleY = 1f;
-
     public static class Rect {
         private float left;
         private float top;
@@ -79,31 +75,6 @@ public class Signature {
             this.name = name;
         }
     }
-
-    public Rect getRect() {
-        return rect;
-    }
-
-    public void setRect(Rect rect) {
-        this.rect = rect;
-    }
-
-    public float getScaleX() {
-        return scaleX;
-    }
-
-    public void setScaleX(float scaleX) {
-        this.scaleX = scaleX;
-    }
-
-    public float getScaleY() {
-        return scaleY;
-    }
-
-    public void setScaleY(float scaleY) {
-        this.scaleY = scaleY;
-    }
-
     public float getLeft() {
         return left;
     }

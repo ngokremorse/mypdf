@@ -9,51 +9,7 @@ public class ITextInput {
     private String text;
     private String[] textLines;
     private float fontSize;
-    private float scaleX = 1f;
-    private float scaleY = 1f;
-    private float cacheTranslationX;
-    private float cacheTranslationY;
-    private float lineHeight;
-    private Rect rect;
     private Metadata metadata;
-    public static class Rect {
-        private float left;
-        private float top;
-        private float width;
-        private float height;
-
-        public float getLeft() {
-            return left;
-        }
-
-        public void setLeft(float left) {
-            this.left = left;
-        }
-
-        public float getTop() {
-            return top;
-        }
-
-        public void setTop(float top) {
-            this.top = top;
-        }
-
-        public float getWidth() {
-            return width;
-        }
-
-        public void setWidth(float width) {
-            this.width = width;
-        }
-
-        public float getHeight() {
-            return height;
-        }
-
-        public void setHeight(float height) {
-            this.height = height;
-        }
-    }
     public static class Metadata {
         private int pageActive;
         private int id;
@@ -83,29 +39,9 @@ public class ITextInput {
             this.name = name;
         }
     }
-
-
-
     public  ITextInput(){
 
     }
-
-    public Rect getRect() {
-        return rect;
-    }
-
-    public void setRect(Rect rect) {
-        this.rect = rect;
-    }
-
-    public float getLineHeight() {
-        return lineHeight;
-    }
-
-    public void setLineHeight(float lineHeight) {
-        this.lineHeight = lineHeight;
-    }
-
     public float getTop() {
         return top;
     }
@@ -168,37 +104,5 @@ public class ITextInput {
 
     public void setMetadata(Metadata metadata) {
         this.metadata = metadata;
-    }
-
-    public float getScaleX() {
-        return scaleX;
-    }
-
-    public void setScaleX(float scaleX) {
-        this.scaleX = scaleX;
-    }
-
-    public float getScaleY() {
-        return scaleY;
-    }
-
-    public void setScaleY(float scaleY) {
-        this.scaleY = scaleY;
-    }
-
-    public float getCacheTranslationX() {
-        return cacheTranslationX;
-    }
-
-    public void setCacheTranslationX(float cacheTranslationX) {
-        this.cacheTranslationX = cacheTranslationX;
-    }
-
-    public float getCacheTranslationY() {
-        return cacheTranslationY;
-    }
-
-    public void setCacheTranslationY(float cacheTranslationY) {
-        this.cacheTranslationY = cacheTranslationY;
     }
 }
