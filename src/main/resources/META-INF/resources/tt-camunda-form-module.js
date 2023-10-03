@@ -51,11 +51,13 @@ window.formApi = {
         return variableManager.variables;
     },
     createVariable: function (name, type, value) {
-        variableManager.createVariable({
-            name: name,
-            type: type,
-            value: value
-        })
+        if(!this.getVariables()[name]) {
+            variableManager.createVariable({
+                name: name,
+                type: type,
+                value: value
+            })
+        }
     },
     /**
      *

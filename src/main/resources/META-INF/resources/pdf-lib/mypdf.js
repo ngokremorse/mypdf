@@ -159,7 +159,16 @@ var PDFTQT = function () {
             fCanvas.renderAll();
 
         }
-        this.addGroup = function (text, width, height, background, metadata) {
+        /**
+         *
+         * @param {Object} metadata
+         * @param {String} metadata.id - Unique value
+         * @param text
+         * @param width
+         * @param height
+         * @param background
+         */
+        this.addGroup = function (metadata, text, width, height, background) {
             width = width ? width : 75 * that.scalePage;
             height = height ? height : 50 * that.scalePage;
             background = background ? background : 'green';

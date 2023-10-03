@@ -33,9 +33,30 @@
                     await pdfEditor.loadPdf('pdf-container', pdfBytes);
                 }
             });
+            formApi.fetchVariable('users');
+            formApi.fetchVariable('pdfData');
         });
         camFormVariablesFetch(() => {
-            console.log(formApi.getVariable('attachFile'));
+            const attachFile = formApi.getVariable('attachFile');
+            const pdfData = formApi.getVariable('pdfData').value;
+            const scaleOld = pdfData.scalePage;
+            debugger;
+            camHttp({
+                url: domainUrl + attachFile.contentUrl,
+                method: "get",
+                responseType: 'blob'
+            }).then(async (rep) => {
+
+                const blobFile = rep.data;
+                const pdfBytes = await blobFile.arrayBuffer();
+                filePdf = new File([blobFile], attachFile.valueInfo.fileName || attachFile.valueInfo.filename);
+                const container = new DataTransfer();
+                container.items.add(filePdf);
+                document.getElementById("fileInput").files = container.files;
+                pdfEditor = new pdf.PDFEditor();
+                await pdfEditor.loadPdf('pdf-container', pdfBytes);
+                pdfEditor.loadComponents(pdfData.components, pdfEditor.scalePage / scaleOld);
+            });
         })
         camFormSubmit(() => {
             let data = pdfEditor.exportData();
@@ -57,18 +78,55 @@
                         text: item.text,
                         textLines: item.textLines,
                         selectionColor: item.selectionColor,
-                        metadata: item.metadata
+                        metadata: item.metadata,
+                        boundingRect: item.getBoundingRect()
                     };
                 })
             }
             formApi.createVariable('pdfData', 'json', data);
+            formApi.getVariables().users.value = ["thanhtq", "thanhtq1"];
         })
         document.body.querySelector("#fullScreen").addEventListener('click', async function () {
             await pdfEditor.reloadPdf();
         });
         document.body.querySelector("#saveBtn").addEventListener('click', async function () {
-            processApi.createOrUpdateFile("attachFile", filePdf, function (rep) {
-                console.log("upload file success!");
+            if (filePdf) {
+                processApi.createOrUpdateFile("attachFile", filePdf, function (rep) {
+                    console.log("upload file success!");
+                });
+            }
+            let data = pdfEditor.exportData();
+            data = {
+                scalePage: data.scalePage,
+                components: data.components.map(item => {
+                    return {
+                        _objects: item._objects,
+                        objects: item.objects,
+                        top: item.top,
+                        left: item.left,
+                        width: item.width,
+                        height: item.height,
+                        scaleX: item.scaleX,
+                        scaleY: item.scaleY,
+                        fill: item.fill,
+                        fontSize: item.fontSize,
+                        type: item.type,
+                        text: item.text,
+                        textLines: item.textLines,
+                        selectionColor: item.selectionColor,
+                        metadata: item.metadata,
+                        boundingRect: item.getBoundingRect()
+                    };
+                })
+            }
+
+            processApi.createOrUpdateVariable({
+                type: "json",
+                value: JSON.stringify(data),
+                name: 'pdfData'
+
+            }, function (rep) {
+                console.log(rep);
             });
             $scope.save();
         });
@@ -81,27 +139,22 @@
             const pdfData = pdfEditor.exportData();
             const formData = new FormData();
             formData.append("file", filePdf);
+            formData.append("scalePage", pdfData.scalePage);
             formData.append("signatures", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "group").map(item => {
-                const boundingRect = item.getBoundingRect();
                 return {
                     metadata: item.metadata,
-                    height: boundingRect.height / pdfData.scalePage,
-                    width: boundingRect.width / pdfData.scalePage,
-                    left: boundingRect.left / pdfData.scalePage,
-                    top: boundingRect.top / pdfData.scalePage
+                    boundingRect: item.getBoundingRect()
                 }
             }))], {type: 'application/json'}));
 
             formData.append("textInputs", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "i-text").map(item => {
-                const boundingRect = item.getBoundingRect();
                 return {
                     text: item.text,
                     metadata: item.metadata,
-                    fontSize: item.fontSize * item.scaleY / pdfData.scalePage,
-                    height: boundingRect.height / pdfData.scalePage,
-                    width: boundingRect.width / pdfData.scalePage,
-                    left: boundingRect.left / pdfData.scalePage,
-                    top: boundingRect.top / pdfData.scalePage
+                    scaleX: item.scaleX,
+                    scaleY: item.scaleY,
+                    fontSize: item.fontSize * Math.max(item.scaleY, item.scaleX),
+                    boundingRect: item.getBoundingRect()
                 }
             }))], {type: 'application/json'}));
 
@@ -116,7 +169,6 @@
                         const url = URL.createObjectURL(rep.data);
                         window.open(url);
                         const downloadLink = document.createElement('a');
-
                         downloadLink.href = url;
                         downloadLink.download = "result.pdf";
                         downloadLink.click();

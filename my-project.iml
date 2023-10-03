@@ -9,7 +9,9 @@
     <facet type="jpa" name="JPA">
       <configuration>
         <setting name="validation-enabled" value="true" />
-        <datasource-mapping />
+        <datasource-mapping>
+          <factory-entry name="my-project" />
+        </datasource-mapping>
         <naming-strategy-map />
       </configuration>
     </facet>
@@ -100,6 +102,7 @@
     <orderEntry type="library" name="Maven: org.apache.pdfbox:pdfbox:2.0.29" level="project" />
     <orderEntry type="library" name="Maven: org.apache.pdfbox:fontbox:2.0.29" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.camunda.bpm:camunda-engine-rest:classes:7.19.0" level="project" />
     <orderEntry type="library" name="Maven: org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-webapp:7.19.0" level="project" />
     <orderEntry type="library" name="Maven: org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-webapp-core:7.19.0" level="project" />
     <orderEntry type="library" name="Maven: org.camunda.bpm.webapp:camunda-webapp:classes:7.19.0" level="project" />
@@ -162,5 +165,6 @@
     <orderEntry type="library" name="Maven: org.springframework.plugin:spring-plugin-core:2.0.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.plugin:spring-plugin-metadata:2.0.0.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-annotations:2.1.10" level="project" />
+    <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.24" level="project" />
   </component>
 </module>

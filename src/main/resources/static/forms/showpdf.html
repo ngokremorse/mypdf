@@ -22,17 +22,15 @@
         camFormOnload(() => {
             formApi.fetchVariable('pdfData');
         });
-
         camFormVariablesFetch(async () => {
-            console.log(window.processInstanceId);
             const pdfData = formApi.getVariable('pdfData').value;
             const scaleOld = pdfData.scale;
             const components = pdfData.components;
             fetch(formApi.getVariable('attachFile').contentUrl)
                     .then(rep => rep.arrayBuffer())
                     .then(async (bytes) => {
-                        const filePdfBlob = new Blob([new Uint8Array(bytes)], {type:'application/pdf'});
-                        filePdf = new File([filePdfBlob], "attachFile.pdf", {type:'application/pdf'});
+                        const filePdfBlob = new Blob([new Uint8Array(bytes)], {type: 'application/pdf'});
+                        filePdf = new File([filePdfBlob], "attachFile.pdf", {type: 'application/pdf'});
                         await pdfEditor.loadPdf('pdf-container', bytes);
                         pdfEditor.loadComponents(components, pdfEditor.scalePage / scaleOld);
                     });
@@ -41,34 +39,22 @@
             const pdfData = pdfEditor.exportData();
             const formData = new FormData();
             formData.append("file", filePdf);
-            formData.append("scale", pdfData.scale);
+            formData.append("scalePage", pdfData.scalePage);
             formData.append("signatures", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "group").map(item => {
                 return {
-                    rect: item.getBoundingRect(),
                     metadata: item.metadata,
-                    scaleX: item.scaleX,
-                    scaleY: item.scaleY,
-                    height: item.height,
-                    width: item.width,
-                    left: item.left,
-                    top: item.top
+                    boundingRect: item.getBoundingRect()
                 }
             }))], {type: 'application/json'}));
 
             formData.append("textInputs", new Blob([JSON.stringify(pdfData.components.filter(item => item.type === "i-text").map(item => {
-                const boundingRect = item.getBoundingRect();
                 return {
-                    rect: item.getBoundingRect(),
                     text: item.text,
                     metadata: item.metadata,
                     scaleX: item.scaleX,
                     scaleY: item.scaleY,
-                    fontSize: item.fontSize,
-                    lineHeight: item.lineHeight,
-                    height: boundingRect.height,
-                    width: boundingRect.width,
-                    left: boundingRect.left,
-                    top: boundingRect.top
+                    fontSize: item.fontSize * Math.max(item.scaleY, item.scaleX),
+                    boundingRect: item.getBoundingRect()
                 }
             }))], {type: 'application/json'}));
 
@@ -83,7 +69,6 @@
                         const url = URL.createObjectURL(rep.data);
                         window.open(url);
                         const downloadLink = document.createElement('a');
-
                         downloadLink.href = url;
                         downloadLink.download = "result.pdf";
                         downloadLink.click();

@@ -1,67 +1,196 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.13.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.9.0">
   <bpmn:message id="Message_1g5d0de" name="Message_1g5d0de" />
   <bpmn:collaboration id="Collaboration_0urd827">
     <bpmn:participant id="Participant_09i644b" processRef="Sign-File" />
   </bpmn:collaboration>
   <bpmn:process id="Sign-File" name="Sign File" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_0mlnt7c">
+      <bpmn:lane id="Lane_1cv2t54" name="Cán bộ nhân viên">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1lfo7cd</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>say-hello</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0o071eg" name="Các cấp phê duyệt">
+        <bpmn:flowNodeRef>Activity_11ecuxl</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0mb0ggy</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_1jib8eb</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="say-hello" name="Editor PDF file" camunda:formKey="embedded:app:forms/editpdf.html" camunda:candidateUsers="admin">
+    <bpmn:subProcess id="Activity_11ecuxl">
+      <bpmn:incoming>Flow_03uoulo</bpmn:incoming>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="${users}" camunda:elementVariable="user" />
+      <bpmn:startEvent id="Event_0hbw0gb">
+        <bpmn:outgoing>Flow_1si24ky</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:userTask id="Activity_1fb4wtd" name="Các cấp phê duyệt" camunda:formKey="embedded:app:forms/showpdf.html" camunda:assignee="${user}">
+        <bpmn:documentation>Tải file tài liệu, thêm các cấp phê duyệt và kéo thả chữ ký</bpmn:documentation>
+        <bpmn:incoming>Flow_1si24ky</bpmn:incoming>
+        <bpmn:outgoing>Flow_1014i9x</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:serviceTask id="Activity_09116tt" name="Sign file" camunda:class="com.example.workflow.features.SignFile">
+        <bpmn:documentation>Ký file, lưu file có chữ ký của cán bộ nhân viên</bpmn:documentation>
+        <bpmn:incoming>Flow_05w4f2i</bpmn:incoming>
+        <bpmn:outgoing>Flow_1o9ldy8</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:exclusiveGateway id="Gateway_1qx8j53" name="sign?" default="Flow_1h97pel">
+        <bpmn:incoming>Flow_1014i9x</bpmn:incoming>
+        <bpmn:outgoing>Flow_05w4f2i</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1h97pel</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:endEvent id="Event_0swu79r">
+        <bpmn:incoming>Flow_1h97pel</bpmn:incoming>
+        <bpmn:messageEventDefinition id="MessageEventDefinition_0rvhxyu" messageRef="Message_2rhtvsg" camunda:class=" com.example.workflow.features.HandleThrowMessage" />
+      </bpmn:endEvent>
+      <bpmn:endEvent id="Event_0nxtg60">
+        <bpmn:incoming>Flow_1o9ldy8</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1si24ky" sourceRef="Event_0hbw0gb" targetRef="Activity_1fb4wtd" />
+      <bpmn:sequenceFlow id="Flow_1014i9x" sourceRef="Activity_1fb4wtd" targetRef="Gateway_1qx8j53" />
+      <bpmn:sequenceFlow id="Flow_05w4f2i" name="y" sourceRef="Gateway_1qx8j53" targetRef="Activity_09116tt">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${action == "YES"}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_1o9ldy8" sourceRef="Activity_09116tt" targetRef="Event_0nxtg60" />
+      <bpmn:sequenceFlow id="Flow_1h97pel" sourceRef="Gateway_1qx8j53" targetRef="Event_0swu79r" />
+    </bpmn:subProcess>
+    <bpmn:boundaryEvent id="Event_0mb0ggy" attachedToRef="Activity_11ecuxl">
+      <bpmn:outgoing>Flow_1rzgzlm</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0xwefri" messageRef="Message_2rhtvsg" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1jib8eb" sourceRef="StartEvent_1" targetRef="say-hello" />
+    <bpmn:serviceTask id="Activity_1lfo7cd" name="Sign file" camunda:class="com.example.workflow.features.SignFile">
+      <bpmn:documentation>Ký file, lưu file có chữ ký của cán bộ nhân viên</bpmn:documentation>
+      <bpmn:incoming>SequenceFlow_16gzt2m</bpmn:incoming>
+      <bpmn:outgoing>Flow_03uoulo</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_03uoulo" sourceRef="Activity_1lfo7cd" targetRef="Activity_11ecuxl" />
+    <bpmn:userTask id="say-hello" name="CBNV" camunda:formKey="embedded:app:forms/editpdf.html" camunda:candidateUsers="admin">
+      <bpmn:documentation>Tải file tài liệu, thêm các cấp phê duyệt và kéo thả chữ ký</bpmn:documentation>
+      <bpmn:incoming>Flow_1rzgzlm</bpmn:incoming>
       <bpmn:incoming>Flow_1jib8eb</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_16gzt2m</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_01j9g7r" name="Show PDF File" camunda:formKey="embedded:app:forms/showpdf.html">
-      <bpmn:incoming>SequenceFlow_16gzt2m</bpmn:incoming>
-      <bpmn:outgoing>Flow_1kt2gsp</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:endEvent id="EndEvent_0x6ir2l">
-      <bpmn:incoming>Flow_1kt2gsp</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:boundaryEvent id="Event_0b32hr6" name="Save Draft" cancelActivity="false" attachedToRef="say-hello">
-      <bpmn:messageEventDefinition id="MessageEventDefinition_10w8b5r" messageRef="Message_1g5d0de" />
-    </bpmn:boundaryEvent>
-    <bpmn:sequenceFlow id="Flow_1jib8eb" sourceRef="StartEvent_1" targetRef="say-hello" />
-    <bpmn:sequenceFlow id="SequenceFlow_16gzt2m" sourceRef="say-hello" targetRef="Activity_01j9g7r" />
-    <bpmn:sequenceFlow id="Flow_1kt2gsp" sourceRef="Activity_01j9g7r" targetRef="EndEvent_0x6ir2l" />
+    <bpmn:sequenceFlow id="SequenceFlow_16gzt2m" sourceRef="say-hello" targetRef="Activity_1lfo7cd" />
+    <bpmn:sequenceFlow id="Flow_1rzgzlm" sourceRef="Event_0mb0ggy" targetRef="say-hello" />
+    <bpmn:textAnnotation id="TextAnnotation_1ynulwy">
+      <bpmn:text>Tải file tài liệu</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:textAnnotation id="TextAnnotation_0vwblcp">
+      <bpmn:text>Kéo thả chữ ký</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_02108ox" sourceRef="say-hello" targetRef="TextAnnotation_0vwblcp" />
+    <bpmn:association id="Association_029otbm" sourceRef="say-hello" targetRef="TextAnnotation_1ynulwy" />
   </bpmn:process>
+  <bpmn:message id="Message_2rhtvsg" name="Reject_Sign" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0urd827">
       <bpmndi:BPMNShape id="Participant_09i644b_di" bpmnElement="Participant_09i644b" isHorizontal="true">
-        <dc:Bounds x="129" y="54" width="880" height="290" />
+        <dc:Bounds x="160" y="80" width="830" height="550" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-        <dc:Bounds x="179" y="99" width="36" height="36" />
+      <bpmndi:BPMNShape id="Lane_0o071eg_di" bpmnElement="Lane_0o071eg" isHorizontal="true">
+        <dc:Bounds x="190" y="350" width="800" height="280" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_1cv2t54_di" bpmnElement="Lane_1cv2t54" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="800" height="270" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="UserTask_08mft2c_di" bpmnElement="say-hello">
-        <dc:Bounds x="240" y="77" width="100" height="80" />
+        <dc:Bounds x="350" y="223" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1txfcpd_di" bpmnElement="Activity_01j9g7r">
-        <dc:Bounds x="520" y="84" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_08j55lb_di" bpmnElement="Activity_1lfo7cd">
+        <dc:Bounds x="490" y="223" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_0x6ir2l_di" bpmnElement="EndEvent_0x6ir2l">
-        <dc:Bounds x="952" y="106" width="36" height="36" />
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="252" y="245" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0nesp7j_di" bpmnElement="Event_0b32hr6">
-        <dc:Bounds x="272" y="139" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_12jv6hj_di" bpmnElement="Activity_11ecuxl" isExpanded="true">
+        <dc:Bounds x="280" y="380" width="650" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0hbw0gb_di" bpmnElement="Event_0hbw0gb">
+        <dc:Bounds x="320" y="462" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_04gczlf" bpmnElement="Activity_1fb4wtd">
+        <dc:Bounds x="400" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1ju3cmf" bpmnElement="Activity_09116tt">
+        <dc:Bounds x="660" y="440" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1qx8j53_di" bpmnElement="Gateway_1qx8j53" isMarkerVisible="true">
+        <dc:Bounds x="555" y="455" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="264" y="182" width="53" height="14" />
+          <dc:Bounds x="567" y="433" width="27" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1exjpin_di" bpmnElement="Event_0swu79r">
+        <dc:Bounds x="562" y="532" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0nxtg60_di" bpmnElement="Event_0nxtg60">
+        <dc:Bounds x="822" y="462" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1si24ky_di" bpmnElement="Flow_1si24ky">
+        <di:waypoint x="356" y="480" />
+        <di:waypoint x="400" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1014i9x_di" bpmnElement="Flow_1014i9x">
+        <di:waypoint x="500" y="480" />
+        <di:waypoint x="555" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05w4f2i_di" bpmnElement="Flow_05w4f2i">
+        <di:waypoint x="605" y="480" />
+        <di:waypoint x="660" y="480" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="630" y="462" width="5" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1o9ldy8_di" bpmnElement="Flow_1o9ldy8">
+        <di:waypoint x="760" y="480" />
+        <di:waypoint x="822" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1h97pel_di" bpmnElement="Flow_1h97pel">
+        <di:waypoint x="580" y="505" />
+        <di:waypoint x="580" y="532" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="TextAnnotation_1ynulwy_di" bpmnElement="TextAnnotation_1ynulwy">
+        <dc:Bounds x="250" y="110" width="100" height="30" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0vwblcp_di" bpmnElement="TextAnnotation_0vwblcp">
+        <dc:Bounds x="370" y="110" width="100" height="30" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0e203i8_di" bpmnElement="Event_0mb0ggy">
+        <dc:Bounds x="382" y="362" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1jib8eb_di" bpmnElement="Flow_1jib8eb">
-        <di:waypoint x="215" y="117" />
-        <di:waypoint x="240" y="117" />
+        <di:waypoint x="288" y="263" />
+        <di:waypoint x="350" y="263" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_16gzt2m_di" bpmnElement="SequenceFlow_16gzt2m">
-        <di:waypoint x="340" y="117" />
-        <di:waypoint x="520" y="117" />
+        <di:waypoint x="450" y="263" />
+        <di:waypoint x="490" y="263" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1kt2gsp_di" bpmnElement="Flow_1kt2gsp">
-        <di:waypoint x="620" y="124" />
-        <di:waypoint x="952" y="124" />
+      <bpmndi:BPMNEdge id="Flow_03uoulo_di" bpmnElement="Flow_03uoulo">
+        <di:waypoint x="540" y="303" />
+        <di:waypoint x="540" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rzgzlm_di" bpmnElement="Flow_1rzgzlm">
+        <di:waypoint x="400" y="362" />
+        <di:waypoint x="400" y="303" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_029otbm_di" bpmnElement="Association_029otbm">
+        <di:waypoint x="371" y="223" />
+        <di:waypoint x="311" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_02108ox_di" bpmnElement="Association_02108ox">
+        <di:waypoint x="406" y="223" />
+        <di:waypoint x="418" y="140" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
